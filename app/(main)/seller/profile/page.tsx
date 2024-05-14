@@ -4,15 +4,36 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { InputTextarea } from 'primereact/inputtextarea';
+import { InputMask } from 'primereact/inputmask';
 import { Dropdown } from 'primereact/dropdown';
+import { Image } from 'primereact/image';
+import { FileUpload } from 'primereact/fileupload';
+import { MultiSelect } from 'primereact/multiselect';
 
 interface DropdownItem {
     name: string;
     code: string;
 }
+interface InputValue {
+    name: string;
+    code: string;
+}
 
+const multiselectValues: InputValue[] = [
+    { name: 'Australia', code: 'AU' },
+    { name: 'Brazil', code: 'BR' },
+    { name: 'China', code: 'CN' },
+    { name: 'Egypt', code: 'EG' },
+    { name: 'France', code: 'FR' },
+    { name: 'Germany', code: 'DE' },
+    { name: 'India', code: 'IN' },
+    { name: 'Japan', code: 'JP' },
+    { name: 'Spain', code: 'ES' },
+    { name: 'United States', code: 'US' }
+];
 const FormLayoutDemo = () => {
     const [dropdownItem, setDropdownItem] = useState<DropdownItem | null>(null);
+    const [multiselectValue, setMultiselectValue] = useState(null);
     const dropdownItems: DropdownItem[] = useMemo(
         () => [
             { name: 'Option 1', code: 'Option 1' },
@@ -22,15 +43,34 @@ const FormLayoutDemo = () => {
         []
     );
 
+    const onUpload = (file: any) => {
+        console.log(file);
+    };
+
     useEffect(() => {
         setDropdownItem(dropdownItems[0]);
     }, [dropdownItems]);
+
+    const itemTemplate = (option: InputValue) => {
+        return (
+            <div className="flex align-items-center">
+                <img
+                    alt={option.name}
+                    src={`/demo/images/flag/flag_placeholder.png`}
+                    onError={(e) => (e.currentTarget.src = 'https://www.primefaces.org/wp-content/uploads/2020/05/placeholder.png')}
+                    className={`flag flag-${option.code.toLowerCase()}`}
+                    style={{ width: '21px' }}
+                />
+                <span className="ml-2">{option.name}</span>
+            </div>
+        );
+    };
 
     return (
         <div className="grid">
             <div className="col-12 md:col-6">
                 <div className="card p-fluid">
-                    <h5>Vertical</h5>
+                    <h5>Profile</h5>
                     <div className="field">
                         <label htmlFor="name1">Name</label>
                         <InputText id="name1" type="text" />
@@ -40,105 +80,46 @@ const FormLayoutDemo = () => {
                         <InputText id="email1" type="text" />
                     </div>
                     <div className="field">
-                        <label htmlFor="age1">Age</label>
-                        <InputText id="age1" type="text" />
+                        <label htmlFor="age1">Phone</label>
+                        <InputMask mask="(999) 999-9999" placeholder="(999) 999-9999" />
                     </div>
-                </div>
-
-                <div className="card p-fluid">
-                    <h5>Vertical Grid</h5>
-                    <div className="formgrid grid">
-                        <div className="field col">
-                            <label htmlFor="name2">Name</label>
-                            <InputText id="name2" type="text" />
-                        </div>
-                        <div className="field col">
-                            <label htmlFor="email2">Email</label>
-                            <InputText id="email2" type="text" />
-                        </div>
+                    <div className="field">
+                        <label htmlFor="address">About</label>
+                        <InputTextarea id="address" rows={6} />
                     </div>
                 </div>
             </div>
 
             <div className="col-12 md:col-6">
                 <div className="card p-fluid">
-                    <h5>Horizontal</h5>
-                    <div className="field grid">
-                        <label htmlFor="name3" className="col-12 mb-2 md:col-2 md:mb-0">
-                            Name
-                        </label>
-                        <div className="col-12 md:col-10">
-                            <InputText id="name3" type="text" />
-                        </div>
-                    </div>
-                    <div className="field grid">
-                        <label htmlFor="email3" className="col-12 mb-2 md:col-2 md:mb-0">
-                            Email
-                        </label>
-                        <div className="col-12 md:col-10">
-                            <InputText id="email3" type="text" />
-                        </div>
+                    <h5>Logo</h5>
+                    <div className="flex justify-content-center flex-column align-items-center gap-3">
+                        <Image src={`/demo/images/galleria/galleria10.jpg`} alt="Image" width="250" preview />
+                        <FileUpload mode="basic" name="demo" url="/api/upload" accept="image/*" maxFileSize={1000000} auto onUpload={onUpload} />
                     </div>
                 </div>
-
                 <div className="card">
-                    <h5>Inline</h5>
-                    <div className="formgroup-inline">
-                        <div className="field">
-                            <label htmlFor="firstname1" className="p-sr-only">
-                                Firstname
-                            </label>
-                            <InputText id="firstname1" type="text" placeholder="Firstname" />
-                        </div>
-                        <div className="field">
-                            <label htmlFor="lastname1" className="p-sr-only">
-                                Lastname
-                            </label>
-                            <InputText id="lastname1" type="text" placeholder="Lastname" />
-                        </div>
-                        <Button label="Submit"></Button>
-                    </div>
-                </div>
-
-                <div className="card">
-                    <h5>Help Text</h5>
-                    <div className="field p-fluid">
-                        <label htmlFor="username">Username</label>
-                        <InputText id="username" type="text" />
-                        <small>Enter your username to reset your password.</small>
-                    </div>
+                    <h5>Categories</h5>
+                    <MultiSelect
+                        style={{ width: '100%' }}
+                        value={multiselectValue}
+                        onChange={(e) => setMultiselectValue(e.value)}
+                        options={multiselectValues}
+                        itemTemplate={itemTemplate}
+                        optionLabel="name"
+                        placeholder="Select Countries"
+                        filter
+                        className="multiselect-custom"
+                        display="chip"
+                    />
                 </div>
             </div>
 
             <div className="col-12">
-                <div className="card">
-                    <h5>Advanced</h5>
-                    <div className="p-fluid formgrid grid">
-                        <div className="field col-12 md:col-6">
-                            <label htmlFor="firstname2">Firstname</label>
-                            <InputText id="firstname2" type="text" />
-                        </div>
-                        <div className="field col-12 md:col-6">
-                            <label htmlFor="lastname2">Lastname</label>
-                            <InputText id="lastname2" type="text" />
-                        </div>
-                        <div className="field col-12">
-                            <label htmlFor="address">Address</label>
-                            <InputTextarea id="address" rows={4} />
-                        </div>
-                        <div className="field col-12 md:col-6">
-                            <label htmlFor="city">City</label>
-                            <InputText id="city" type="text" />
-                        </div>
-                        <div className="field col-12 md:col-3">
-                            <label htmlFor="state">State</label>
-                            <Dropdown id="state" value={dropdownItem} onChange={(e) => setDropdownItem(e.value)} options={dropdownItems} optionLabel="name" placeholder="Select One"></Dropdown>
-                        </div>
-                        <div className="field col-12 md:col-3">
-                            <label htmlFor="zip">Zip</label>
-                            <InputText id="zip" type="text" />
-                        </div>
-                    </div>
+                <div className="card flex justify-content-between">
+                    <Button label="Discard"></Button>
+
+                    <Button label="Submit"></Button>
                 </div>
             </div>
         </div>
