@@ -6,16 +6,17 @@ interface AppLayoutProps {
 }
 
 export const metadata: Metadata = {
-    title: 'PrimeReact Sakai',
-    description: 'The ultimate collection of design-agnostic, flexible and accessible React UI Components.',
+    title: 'Eximso | Seller Panel',
+    description: 'Seller dashboard of Eximso b2b ecommerce',
     robots: { index: false, follow: false },
     viewport: { initialScale: 1, width: 'device-width' },
+    metadataBase: new URL('https://eximso-seller.vercel.app'),
     openGraph: {
         type: 'website',
-        title: 'PrimeReact SAKAI-REACT',
+        title: 'Eximso | Seller Panel',
         url: 'https://sakai.primereact.org/',
-        description: 'The ultimate collection of design-agnostic, flexible and accessible React UI Components.',
-        images: ['https://www.primefaces.org/static/social/sakai-react.png'],
+        description: 'Seller dashboard of Eximso b2b ecommerce',
+        images: ['/layout/images/banner-dark.jpeg'],
         ttl: 604800
     },
     icons: {

@@ -117,7 +117,7 @@ const FormLayoutDemo = () => {
 
             <div className="col-12">
                 <div className="card flex justify-content-between">
-                    <Button label="Discard"></Button>
+                    <Button label="Discard" severity="secondary"></Button>
 
                     <Button label="Submit"></Button>
                 </div>

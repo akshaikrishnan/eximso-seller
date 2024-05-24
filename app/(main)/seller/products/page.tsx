@@ -8,6 +8,8 @@ import { Rating } from 'primereact/rating';
 import { ProductService } from '../../../../demo/service/ProductService';
 import { InputText } from 'primereact/inputtext';
 import type { Demo } from '@/types';
+import { Toast } from 'primereact/toast';
+import { Dialog } from 'primereact/dialog';
 
 const ListDemo = () => {
     const listValue = [
@@ -20,9 +22,6 @@ const ListDemo = () => {
         { name: 'Rome', code: 'RM' }
     ];
 
-    const [picklistSourceValue, setPicklistSourceValue] = useState(listValue);
-    const [picklistTargetValue, setPicklistTargetValue] = useState([]);
-    const [orderlistValue, setOrderlistValue] = useState(listValue);
     const [dataViewValue, setDataViewValue] = useState<Demo.Product[]>([]);
     const [globalFilterValue, setGlobalFilterValue] = useState('');
     const [filteredValue, setFilteredValue] = useState<Demo.Product[] | null>(null);
@@ -30,7 +29,10 @@ const ListDemo = () => {
     const [sortKey, setSortKey] = useState(null);
     const [sortOrder, setSortOrder] = useState<0 | 1 | -1 | null>(null);
     const [sortField, setSortField] = useState('');
+    const [deleteProductDialog, setDeleteProductDialog] = useState(false);
+    const [product, setProduct] = useState<Demo.Product>({} as Demo.Product);
 
+    const toast = React.useRef<Toast>(null);
     const sortOptions = [
         { label: 'Price High to Low', value: '!price' },
         { label: 'Price Low to High', value: 'price' }
@@ -62,6 +64,30 @@ const ListDemo = () => {
         }
     };
 
+    const hideDeleteProductDialog = () => {
+        setDeleteProductDialog(false);
+    };
+    const confirmDeleteProduct = (product: Demo.Product) => {
+        setProduct(product);
+        setDeleteProductDialog(true);
+    };
+
+    const deleteProduct = () => {
+        setDeleteProductDialog(false);
+
+        toast.current?.show({
+            severity: 'success',
+            summary: 'Successful',
+            detail: 'Product Deleted',
+            life: 3000
+        });
+    };
+    const deleteProductDialogFooter = (
+        <>
+            <Button label="No" icon="pi pi-times" text onClick={hideDeleteProductDialog} />
+            <Button label="Yes" icon="pi pi-check" text onClick={deleteProduct} />
+        </>
+    );
     const onSortChange = (event: DropdownChangeEvent) => {
         const value = event.value;
 
@@ -90,6 +116,7 @@ const ListDemo = () => {
     const dataviewListItem = (data: Demo.Product) => {
         return (
             <div className="col-12">
+                <Toast ref={toast} />
                 <div className="flex flex-column md:flex-row align-items-center p-3 w-full">
                     <img src={`/demo/images/product/${data.image}`} alt={data.name} className="my-4 md:my-0 w-9 md:w-10rem shadow-2 mr-5" />
                     <div className="flex-1 flex flex-column align-items-center text-center md:text-left">
@@ -103,7 +130,7 @@ const ListDemo = () => {
                     </div>
                     <div className="flex flex-row md:flex-column justify-content-between w-full md:w-auto align-items-center md:align-items-end mt-5 md:mt-0">
                         <span className="text-2xl font-semibold mb-2 align-self-center md:align-self-end">${data.price}</span>
-                        <Button icon="pi pi-shopping-cart" label="Add to Cart" disabled={data.inventoryStatus === 'OUTOFSTOCK'} size="small" className="mb-2"></Button>
+                        <Button label="Delete" icon="pi pi-trash" severity="danger" onClick={() => confirmDeleteProduct(data)} size="small" className="mb-2" />
                         <span className={`product-badge status-${data.inventoryStatus?.toLowerCase()}`}>{data.inventoryStatus}</span>
                     </div>
                 </div>
@@ -130,7 +157,7 @@ const ListDemo = () => {
                     </div>
                     <div className="flex align-items-center justify-content-between">
                         <span className="text-2xl font-semibold">${data.price}</span>
-                        <Button icon="pi pi-shopping-cart" disabled={data.inventoryStatus === 'OUTOFSTOCK'} />
+                        <Button icon="pi pi-trash" severity="danger" onClick={() => confirmDeleteProduct(data)} />
                     </div>
                 </div>
             </div>
@@ -155,6 +182,16 @@ const ListDemo = () => {
                 <div className="card">
                     <h5>DataView</h5>
                     <DataView value={filteredValue || dataViewValue} layout={layout} paginator rows={9} sortOrder={sortOrder} sortField={sortField} itemTemplate={itemTemplate} header={dataViewHeader}></DataView>
+                    <Dialog visible={deleteProductDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteProductDialogFooter} onHide={hideDeleteProductDialog}>
+                        <div className="flex align-items-center justify-content-center">
+                            <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
+                            {product && (
+                                <span>
+                                    Are you sure you want to delete <b>{product.name}</b>?
+                                </span>
+                            )}
+                        </div>
+                    </Dialog>
                 </div>
             </div>
         </div>
