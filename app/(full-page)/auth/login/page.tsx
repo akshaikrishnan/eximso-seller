@@ -9,11 +9,13 @@ import { LayoutContext } from '../../../../layout/context/layoutcontext';
 import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import { SelectButton } from 'primereact/selectbutton';
-import "./login.scss"
+
+import './login.scss';
 
 const LoginPage = () => {
     const [password, setPassword] = useState('');
     const [checked, setChecked] = useState(false);
+    const [isNewUser, setIsNewUser] = useState(true);
     const { layoutConfig } = useContext(LayoutContext);
     const options = ['Buyer', 'Seller'];
     const [value, setValue] = useState(options[0]);
@@ -32,10 +34,10 @@ const LoginPage = () => {
                         background: 'linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)'
                     }}
                 >
-                    <div className="w-full surface-card py-8 px-5 sm:px-8" style={{ borderRadius: '53px' }}>
+                    <form className="w-full surface-card py-8 px-5 sm:px-8" style={{ borderRadius: '53px' }}>
                         <div className="text-center mb-5">
-                            <div className="text-900 text-3xl font-medium mb-3">Login</div>
-                            <span className="text-600 font-medium">Sign in to continue</span>
+                            <div className="text-900 text-3xl font-medium mb-3">Welcome Guest!</div>
+                            <span className="text-600 font-medium">Continue with your email</span>
                         </div>
                         <div className="mb-3">
                             <SelectButton className="buyer-seller" value={value} onChange={(e) => setValue(e.value)} options={options} />
@@ -61,8 +63,10 @@ const LoginPage = () => {
                                 </a>
                             </div>
                             <Button label="Sign In" className="w-full p-3 text-xl" onClick={() => router.push('/')}></Button>
+
+                            <div></div>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>
