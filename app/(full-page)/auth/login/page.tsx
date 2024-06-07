@@ -30,8 +30,14 @@ const LoginPage = () => {
     const [userChecked, setUserChecked] = useState(false);
     const { layoutConfig } = useContext(LayoutContext);
     const options = ['Buyer', 'Seller'];
+    const router = useRouter();
     const [value, setValue] = useState(options[0]);
     const formRef = useRef<HTMLFormElement>(null);
+    const redirectUser = (token: string) => {
+        if (isNewUser) router.push(`/onboarding`);
+        else router.push(`/api/auth/login?token=${token}`);
+    };
+
     const {
         control,
         handleSubmit,
@@ -41,11 +47,16 @@ const LoginPage = () => {
 
     const mutation = useMutation({
         mutationFn: (data: any) => {
-            return axios.post(endpoints.checkUser, data);
+            if (!userChecked) return axios.post(endpoints.checkUser, data);
+            if (isNewUser) return axios.post(endpoints.register, data);
+            return axios.post(endpoints.login, data);
         },
         onSuccess: (data) => {
             setUserChecked(true);
             setIsNewUser(data.data.isNewUser);
+            if (data.data.token) {
+                redirectUser(data.data.token);
+            }
         }
     });
 
@@ -57,7 +68,6 @@ const LoginPage = () => {
     //     return errors[name] && <small className="p-error">{errors?.[name]?.message}</small>;
     // };
 
-    const router = useRouter();
     const containerClassName = classNames('surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden', { 'p-input-filled': layoutConfig.inputStyle === 'filled' });
 
     const checkUser = () => {

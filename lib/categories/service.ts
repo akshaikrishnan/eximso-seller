@@ -12,7 +12,7 @@ export const create = async (data: any) => {
     return model.create(data);
 };
 
-export const update = async (id: string, data: any) => {
+export const findAll = async () => {
     await connectDB();
-    return model.findByIdAndUpdate(id, data, { new: true });
+    return model.find({ isDelete: false, isActive: true });
 };
