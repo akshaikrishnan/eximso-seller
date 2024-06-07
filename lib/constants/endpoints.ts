@@ -1,3 +1,3 @@
 export const endpoints = {
-    login: ''
+    checkUser: '/api/auth/check-user'
 };
