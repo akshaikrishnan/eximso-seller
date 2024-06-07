@@ -7,6 +7,11 @@ export const findOne = async (params: any) => {
     return model.findOne({ ...params, isDelete: false, isActive: true });
 };
 
+export const findById = async (id: string) => {
+    await connectDB();
+    return model.findById(id);
+};
+
 export const create = async (data: any) => {
     await connectDB();
     return model.create(data);

@@ -9,6 +9,8 @@ import { Dropdown } from 'primereact/dropdown';
 import { Image } from 'primereact/image';
 import { FileUpload } from 'primereact/fileupload';
 import { MultiSelect } from 'primereact/multiselect';
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 
 interface DropdownItem {
     name: string;
@@ -66,8 +68,19 @@ const FormLayoutDemo = () => {
         );
     };
 
+    const {
+        data: profile,
+        isLoading,
+        isError
+    } = useQuery({
+        queryKey: ['profile'],
+        queryFn: async () => {
+            return axios.get('/api/user').then((res) => res.data);
+        }
+    });
+
     return (
-        <div className="grid">
+        <form className="grid">
             <div className="col-12 md:col-6">
                 <div className="card p-fluid">
                     <h5>Profile</h5>
@@ -122,7 +135,7 @@ const FormLayoutDemo = () => {
                     <Button label="Submit"></Button>
                 </div>
             </div>
-        </div>
+        </form>
     );
 };
 

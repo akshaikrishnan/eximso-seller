@@ -18,6 +18,7 @@ import axios from 'axios';
 import { endpoints } from '@/lib/constants/endpoints';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { decodeJWT } from '@/lib/utils/getDataFromToken';
 
 type LoginInputs = {
     email: string;
@@ -25,7 +26,6 @@ type LoginInputs = {
 };
 
 const LoginPage = () => {
-    const [password, setPassword] = useState('');
     const [checked, setChecked] = useState(false);
     const [isNewUser, setIsNewUser] = useState(true);
     const [userChecked, setUserChecked] = useState(false);
@@ -45,6 +45,28 @@ const LoginPage = () => {
         watch,
         formState: { errors }
     } = useForm<LoginInputs>();
+
+    const social = useMutation({
+        mutationFn: (data: any) => {
+            return axios.post(endpoints.socialLogin, data);
+        },
+        onMutate: () => {
+            toast.loading('Please Wait...', { id: 'login-loading' });
+        },
+        onSuccess: (data) => {
+            toast.dismiss('login-loading');
+            toast.success(data.data.message);
+            if (data.data.newUser) {
+                router.push('/onboarding');
+            } else {
+                router.push('/');
+            }
+        },
+        onError: (error: any) => {
+            toast.dismiss('login-loading');
+            toast.error(error.response.data.message);
+        }
+    });
 
     const mutation = useMutation({
         mutationFn: (data: any) => {
@@ -175,11 +197,14 @@ const LoginPage = () => {
                                     <span className="p-tag">OR</span>
                                 </Divider>
                                 <GoogleLogin
+                                    useOneTap
                                     onSuccess={(credentialResponse) => {
-                                        console.log(credentialResponse);
+                                        decodeJWT(credentialResponse.credential || '').then((data: any) => {
+                                            social.mutate({ email: data.email, name: data.name, logo: data.picture, socialType: 'google' });
+                                        });
                                     }}
                                     onError={() => {
-                                        console.log('Login Failed');
+                                        toast.error('Login Failed');
                                     }}
                                 />
                             </div>

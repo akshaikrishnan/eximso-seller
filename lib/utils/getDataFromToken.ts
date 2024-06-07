@@ -27,3 +27,7 @@ export const getDataFromToken = (token: string) => {
         throw new Error(error.message);
     }
 };
+
+export const decodeJWT = async (token: string) => {
+    return jwt.decode(token);
+};

@@ -4,3 +4,9 @@
         flex: 1 0 auto;
     }
 }
+
+.surface-card {
+    @media (max-width: 768px) {
+        min-width: 90vw;
+    }
+}

@@ -50,5 +50,5 @@ export async function POST(req: NextRequest, res: NextResponse) {
     const token = jwt.sign({ id: user._id.toString(), email: email }, process.env.JWT_SECRET!, { expiresIn: '7d' });
     const url = new URL('/api/auth/login', req.url);
     url.searchParams.set('token', token);
-    return NextResponse.json({ message: 'Invalid email or password', redirectUrl: url, token: token }, { status: 200 });
+    return NextResponse.json({ message: `Welcome back ${user.name || user.email}!`, redirectUrl: url, token: token }, { status: 200 });
 }
