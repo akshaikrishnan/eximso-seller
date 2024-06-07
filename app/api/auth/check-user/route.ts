@@ -13,5 +13,5 @@ export async function POST(req: NextRequest, res: NextResponse) {
         return NextResponse.json({ errorCode: 1, message: 'email not found', isNewUser: true });
     }
 
-    return NextResponse.json({ errorCode: 0, user, isNewUser: false });
+    return NextResponse.json({ errorCode: 0, user, message: `Welcome back ${user.name || user.email} please enter your password`, isNewUser: false });
 }

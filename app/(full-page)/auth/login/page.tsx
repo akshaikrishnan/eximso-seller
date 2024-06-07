@@ -17,6 +17,7 @@ import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { endpoints } from '@/lib/constants/endpoints';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 type LoginInputs = {
     email: string;
@@ -53,10 +54,14 @@ const LoginPage = () => {
         },
         onSuccess: (data) => {
             setUserChecked(true);
+            toast.success(data.data.message);
             setIsNewUser(data.data.isNewUser);
             if (data.data.token) {
                 redirectUser(data.data.token);
             }
+        },
+        onError: (error: any) => {
+            toast.error(error.response.data.message);
         }
     });
 
