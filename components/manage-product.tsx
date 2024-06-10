@@ -1,29 +1,21 @@
 'use client';
 import { CountryService } from '@/demo/service/CountryService';
+import { Product } from '@/lib/types/product';
 import type { Demo, Page } from '@/types';
 import Image from 'next/image';
 import { AutoComplete, AutoCompleteCompleteEvent } from 'primereact/autocomplete';
 import { Button } from 'primereact/button';
-import { Calendar } from 'primereact/calendar';
-import { Checkbox, CheckboxChangeEvent } from 'primereact/checkbox';
 import { Chips } from 'primereact/chips';
-import { ColorPicker, ColorPickerHSBType, ColorPickerRGBType } from 'primereact/colorpicker';
-import { Dropdown } from 'primereact/dropdown';
 import { Editor } from 'primereact/editor';
 import { FileUpload } from 'primereact/fileupload';
 import { InputNumber } from 'primereact/inputnumber';
-import { InputSwitch } from 'primereact/inputswitch';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { Knob } from 'primereact/knob';
-import { ListBox } from 'primereact/listbox';
-import { MultiSelect } from 'primereact/multiselect';
-import { RadioButton } from 'primereact/radiobutton';
-import { Rating } from 'primereact/rating';
-import { SelectButton } from 'primereact/selectbutton';
-import { Slider } from 'primereact/slider';
+
 import { ToggleButton } from 'primereact/togglebutton';
+import { classNames } from 'primereact/utils';
 import { useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 
 interface InputValue {
     name: string;
@@ -36,27 +28,12 @@ const ProductForm: Page = () => {
     const [autoFilteredValue, setAutoFilteredValue] = useState<Demo.Country[]>([]);
     const [inputNumberValue, setInputNumberValue] = useState<number | null>(null);
     const [chipsValue, setChipsValue] = useState<any[]>([]);
-    const [checkboxValue, setCheckboxValue] = useState<string[]>([]);
     const [toggleValue, setToggleValue] = useState(false);
-    const [selectButtonValue1, setSelectButtonValue1] = useState(null);
-    const [selectButtonValue2, setSelectButtonValue2] = useState(null);
     const [text, setText] = useState<any>('');
     const dummy = new Array(10).fill({
         name: 'Category Name',
         image: '/demo/images/nature/'
     });
-
-    const selectButtonValues1: InputValue[] = [
-        { name: 'Option 1', code: 'O1' },
-        { name: 'Option 2', code: 'O2' },
-        { name: 'Option 3', code: 'O3' }
-    ];
-
-    const selectButtonValues2: InputValue[] = [
-        { name: 'Option 1', code: 'O1' },
-        { name: 'Option 2', code: 'O2' },
-        { name: 'Option 3', code: 'O3' }
-    ];
 
     useEffect(() => {
         CountryService.getCountries().then((data) => setAutoValue(data));
@@ -76,35 +53,99 @@ const ProductForm: Page = () => {
         }, 250);
     };
 
+    const {
+        control,
+        watch,
+        setValue,
+        formState: { errors }
+    } = useForm<Product>({
+        defaultValues: {
+            name: '',
+            isActive: true
+        }
+    });
+
+    const price = watch('price');
+    const offerPrice = watch('offerPrice');
+
+    const getPercent = () => {
+        if (price && offerPrice) {
+            return Math.round(((price - offerPrice) / price) * 100);
+        }
+        return 0;
+    };
     return (
-        <div className="grid input-demo">
+        <form className="grid input-demo">
             <div className="col-12  p-fluid md:col-6">
                 <div className="card">
                     <h5>Manage Product</h5>
                     <div className="grid formgrid">
                         <div className="field col-12 mb-2  lg:mb-0">
                             <label htmlFor="name1">Name</label>
-                            <InputText id="name1" type="text" />
+                            <Controller
+                                name="name"
+                                control={control}
+                                rules={{ required: 'Name is required.' }}
+                                render={({ field, fieldState }) => <InputText id={field.name} {...field} autoFocus className={classNames({ 'p-invalid': fieldState.invalid })} />}
+                            />
+                            {/* <InputText id="name1" type="text" /> */}
                         </div>
                     </div>
                     <h6>Status</h6>
-                    <ToggleButton checked={toggleValue} onChange={(e) => setToggleValue(e.value)} onLabel="Product Active" offLabel="Product Offline" />
+
+                    <ToggleButton checked={watch('isActive')} onChange={(e) => setValue('isActive', e.value)} onLabel="Product Active" offLabel="Product Offline" />
 
                     <h6>Price</h6>
                     <div className="grid formgrid">
                         <div className="col-12 mb-2 lg:col-5 lg:mb-0">
                             <label htmlFor="original">Original Price</label>
-                            <InputNumber className="mt-1" id="original" min={0} mode="currency" currency="USD" placeholder="Original Price" />
+                            <Controller
+                                name="price"
+                                control={control}
+                                rules={{ required: 'Name is required.' }}
+                                render={({ field, fieldState }) => (
+                                    <InputNumber
+                                        id={field.name}
+                                        ref={field.ref}
+                                        value={field.value}
+                                        onBlur={field.onBlur}
+                                        onValueChange={(e) => field.onChange(e)}
+                                        min={0}
+                                        mode="currency"
+                                        currency="USD"
+                                        placeholder="Original Price"
+                                        className={classNames('mt-1', { 'p-invalid': fieldState.invalid })}
+                                    />
+                                )}
+                            />
                         </div>
                         <div className="col-12 mb-2 lg:col-5 lg:mb-0">
                             <label htmlFor="name1">Offer Price</label>
-                            <InputNumber className="mt-1" min={0} placeholder="Offer Price" mode="currency" currency="USD" />
+                            <Controller
+                                name="offerPrice"
+                                control={control}
+                                rules={{ required: 'Name is required.' }}
+                                render={({ field, fieldState }) => (
+                                    <InputNumber
+                                        id={field.name}
+                                        ref={field.ref}
+                                        value={field.value}
+                                        onBlur={field.onBlur}
+                                        onValueChange={(e) => field.onChange(e)}
+                                        min={0}
+                                        mode="currency"
+                                        currency="USD"
+                                        placeholder="Offer Price"
+                                        className={classNames('mt-1', { 'p-invalid': fieldState.invalid })}
+                                    />
+                                )}
+                            />
                         </div>
                         <div className="col-12 mb-2 lg:col-2 lg:mb-0">
                             <label htmlFor="name1">Percent</label>
 
                             <span className="mt-1  p-input-icon-right">
-                                <InputText type="text" readOnly placeholder="%" />
+                                <InputNumber value={getPercent()} readOnly placeholder="%" />
                                 <i className="pi pi-percentage" />
                             </span>
                         </div>
@@ -175,7 +216,7 @@ const ProductForm: Page = () => {
                     <Button label="Submit"></Button>
                 </div>
             </div>
-        </div>
+        </form>
     );
 };
 

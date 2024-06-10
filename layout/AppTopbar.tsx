@@ -8,11 +8,11 @@ import { LayoutContext } from './context/layoutcontext';
 import { Menu } from 'primereact/menu';
 const items = [
     {
-        label: 'Options',
+        label: 'Logged In',
         items: [
             {
-                label: 'Refresh',
-                icon: 'pi pi-refresh'
+                label: 'My Profile',
+                icon: 'pi pi-user'
             },
             {
                 label: 'Logout',

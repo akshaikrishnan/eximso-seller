@@ -3,6 +3,7 @@ import mongoose, { Document, Model } from 'mongoose';
 interface ICategory extends Document {
     name: string;
     description?: string;
+    category: string;
 }
 
 const CategorySchema = new mongoose.Schema({
@@ -11,11 +12,12 @@ const CategorySchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
     description: {
         type: String
     }
 });
 
-const SubCategory: Model<ICategory> = mongoose.models.Category || mongoose.model<ICategory>('Category', CategorySchema);
+const Category: Model<ICategory> = mongoose.models.SubCategory || mongoose.model<ICategory>('SubCategory', CategorySchema);
 
-export default SubCategory;
+export default Category;
