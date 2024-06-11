@@ -12,7 +12,11 @@ export async function POST(req: NextRequest, res: NextResponse) {
         const user = await findOne({ email });
 
         if (user) {
-            const token = jwt.sign({ id: user._id.toString(), email: email }, process.env.JWT_SECRET!, { expiresIn: '7d' });
+            const token = jwt.sign(
+                { id: user._id.toString(), email: email },
+                process.env.JWT_SECRET!,
+                { expiresIn: '7d' }
+            );
             cookies().set('access_token', token);
             return NextResponse.json({
                 message: `Welcome Back ${user.name || user.email}!`,
@@ -21,10 +25,14 @@ export async function POST(req: NextRequest, res: NextResponse) {
                 newUser: false
             });
         }
-        const password = crypto.randomUUID().slice(0, 8);
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = await create({ ...body, password: hashedPassword });
-        const token = jwt.sign({ id: newUser._id.toString(), email: email }, process.env.JWT_SECRET!, { expiresIn: '7d' });
+        // const password = crypto.randomUUID().slice(0, 8);
+        // const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = await create(body);
+        const token = jwt.sign(
+            { id: newUser._id.toString(), email: email },
+            process.env.JWT_SECRET!,
+            { expiresIn: '7d' }
+        );
         cookies().set('access_token', token);
         return NextResponse.json({
             message: `Welcome ${newUser.name || newUser.email}!`,
