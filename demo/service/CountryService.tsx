@@ -7,3 +7,13 @@ export const CountryService = {
             .then((d) => d as Demo.Country[]);
     }
 };
+
+export const CountryNameService = {
+    getCountries() {
+        return fetch('/demo/data/countries.json', {
+            headers: { 'Cache-Control': 'no-cache' }
+        })
+            .then((res) => res.json())
+            .then((d) => d.data.map((country: Demo.Country) => country.name));
+    }
+};

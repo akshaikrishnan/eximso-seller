@@ -28,7 +28,7 @@ const ProductForm: Page = () => {
     const [autoFilteredValue, setAutoFilteredValue] = useState<Demo.Country[]>([]);
     const [inputNumberValue, setInputNumberValue] = useState<number | null>(null);
     const [chipsValue, setChipsValue] = useState<any[]>([]);
-    const [toggleValue, setToggleValue] = useState(false);
+    const [percentage, setPercentage] = useState(0);
     const [text, setText] = useState<any>('');
     const dummy = new Array(10).fill({
         name: 'Category Name',
@@ -57,7 +57,8 @@ const ProductForm: Page = () => {
         control,
         watch,
         setValue,
-        formState: { errors }
+        formState: { errors },
+        handleSubmit
     } = useForm<Product>({
         defaultValues: {
             name: '',
@@ -65,17 +66,22 @@ const ProductForm: Page = () => {
         }
     });
 
-    const price = watch('price');
-    const offerPrice = watch('offerPrice');
+    let priceWatch = watch('price');
+    let offerPriceWatch = watch('offerPrice');
 
-    const getPercent = () => {
-        if (price && offerPrice) {
-            return Math.round(((price - offerPrice) / price) * 100);
-        }
-        return 0;
+    const onSubmit = (data: Product) => {
+        console.log(data);
     };
+
+    useEffect(() => {
+        if (priceWatch && offerPriceWatch) {
+            setPercentage(((priceWatch - offerPriceWatch) / priceWatch) * 100);
+            return;
+        }
+        setPercentage(0);
+    }, [priceWatch, offerPriceWatch]);
     return (
-        <form className="grid input-demo">
+        <form className="grid input-demo" onSubmit={handleSubmit(onSubmit)}>
             <div className="col-12  p-fluid md:col-6">
                 <div className="card">
                     <h5>Manage Product</h5>
@@ -88,7 +94,7 @@ const ProductForm: Page = () => {
                                 rules={{ required: 'Name is required.' }}
                                 render={({ field, fieldState }) => <InputText id={field.name} {...field} autoFocus className={classNames({ 'p-invalid': fieldState.invalid })} />}
                             />
-                            {/* <InputText id="name1" type="text" /> */}
+                            {errors.name && <small className="p-error">{errors?.name?.message}</small>}
                         </div>
                     </div>
                     <h6>Status</h6>
@@ -102,65 +108,90 @@ const ProductForm: Page = () => {
                             <Controller
                                 name="price"
                                 control={control}
-                                rules={{ required: 'Name is required.' }}
+                                rules={{ required: 'Price is required.' }}
                                 render={({ field, fieldState }) => (
                                     <InputNumber
                                         id={field.name}
                                         ref={field.ref}
                                         value={field.value}
                                         onBlur={field.onBlur}
-                                        onValueChange={(e) => field.onChange(e)}
+                                        onChange={(e) => field.onChange({ target: { value: e.value } })}
                                         min={0}
                                         mode="currency"
-                                        currency="USD"
+                                        currency="INR"
                                         placeholder="Original Price"
                                         className={classNames('mt-1', { 'p-invalid': fieldState.invalid })}
                                     />
                                 )}
                             />
+                            {errors.price && <small className="p-error">{errors?.price?.message}</small>}
                         </div>
+
                         <div className="col-12 mb-2 lg:col-5 lg:mb-0">
                             <label htmlFor="name1">Offer Price</label>
                             <Controller
                                 name="offerPrice"
                                 control={control}
-                                rules={{ required: 'Name is required.' }}
+                                rules={{ validate: (value) => (value ? value < priceWatch || 'Offer price should be less than original price' : true) }}
                                 render={({ field, fieldState }) => (
                                     <InputNumber
                                         id={field.name}
                                         ref={field.ref}
                                         value={field.value}
                                         onBlur={field.onBlur}
-                                        onValueChange={(e) => field.onChange(e)}
+                                        onChange={(e) => field.onChange({ target: { value: e.value } })}
                                         min={0}
                                         mode="currency"
-                                        currency="USD"
+                                        currency="INR"
                                         placeholder="Offer Price"
                                         className={classNames('mt-1', { 'p-invalid': fieldState.invalid })}
                                     />
                                 )}
                             />
+                            {errors.offerPrice && <small className="p-error">{errors?.offerPrice?.message}</small>}
                         </div>
                         <div className="col-12 mb-2 lg:col-2 lg:mb-0">
                             <label htmlFor="name1">Percent</label>
 
                             <span className="mt-1  p-input-icon-right">
-                                <InputNumber value={getPercent()} readOnly placeholder="%" />
+                                <InputNumber value={percentage} readOnly placeholder="%" />
                                 <i className="pi pi-percentage" />
                             </span>
                         </div>
                     </div>
                     <h6>Categories</h6>
-                    <AutoComplete placeholder="Search" id="dd" dropdown multiple value={selectedAutoValue} onChange={(e) => setSelectedAutoValue(e.value)} suggestions={autoFilteredValue} completeMethod={searchCountry} field="name" />
+                    <AutoComplete placeholder="Search" id="dd" dropdown value={selectedAutoValue} onChange={(e) => setSelectedAutoValue(e.value)} suggestions={autoFilteredValue} completeMethod={searchCountry} field="name" />
 
                     <h6>Manufactured by / Brand</h6>
-                    <InputText id="name1" type="text" />
+                    <Controller name="brand" control={control} rules={{ required: 'Brand is required.' }} render={({ field, fieldState }) => <InputText id={field.name} {...field} className={classNames({ 'p-invalid': fieldState.invalid })} />} />
+                    {errors.brand && <small className="p-error">{errors?.brand?.message}</small>}
 
                     <h6>Short Description</h6>
-                    <InputTextarea placeholder="Your Message" rows={5} cols={30} />
-
+                    <Controller
+                        name="shortDescription"
+                        control={control}
+                        rules={{ required: 'Short Description is required.' }}
+                        render={({ field, fieldState }) => <InputTextarea rows={6} id={field.name} {...field} className={classNames({ 'p-invalid': fieldState.invalid })} />}
+                    />
+                    {errors.shortDescription && <small className="p-error">{errors?.shortDescription?.message}</small>}
                     <h6>Detailed Description</h6>
-                    <Editor value={text} onTextChange={(e) => setText(e.htmlValue)} style={{ height: '320px' }} />
+                    <Controller
+                        name="detailedDescription"
+                        control={control}
+                        rules={{ required: 'Short Description is required.' }}
+                        render={({ field, fieldState }) => (
+                            <Editor
+                                id={field.name}
+                                ref={field.ref}
+                                value={field.value}
+                                onBlur={field.onBlur}
+                                onTextChange={(e) => field.onChange({ target: { value: e.htmlValue } })}
+                                className={classNames({ 'p-invalid': fieldState.invalid })}
+                                style={{ height: '320px' }}
+                            />
+                        )}
+                    />
+                    {errors.detailedDescription && <small className="p-error">{errors?.detailedDescription?.message}</small>}
 
                     <h6>Stock</h6>
                     <InputNumber value={inputNumberValue} min={0} onValueChange={(e) => setInputNumberValue(e.value ?? null)} showButtons mode="decimal"></InputNumber>

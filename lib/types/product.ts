@@ -8,6 +8,11 @@ export interface Product {
     stock: number;
     tags: string;
     images: string;
+    countryOfOrigin: string;
+    modelNumber: string;
+    minimumOrderQuantity: number;
+    isPrivateLabeling: boolean;
+    isSampleAvailabe: boolean;
     dimensions: {
         length: number;
         width: number;
