@@ -26,5 +26,5 @@ export const update = async (id: string, data: any) => {
 export const findDetail = async (id: string) => {
     await connectDB();
     const CategoryModel = Category;
-    return model.findById(id).populate('categories');
+    return model.findById(id).populate({ path: 'category', model: Category });
 };

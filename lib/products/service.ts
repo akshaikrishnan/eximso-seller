@@ -1,6 +1,8 @@
 import slugify from 'slugify';
 import connectDB from '../utils/db';
 import model from './model';
+import Category from '../categories/model';
+import SubCategory from '../sub-categories/model';
 
 export const generateUniqueSlug = async (name: string) => {
     let slug = slugify(name, { lower: true });
@@ -32,7 +34,8 @@ export const findAll = async (params: any = {}) => {
     await connectDB();
     return model
         .find({ ...params, isDelete: false })
-        .populate(['category', 'subcategory']);
+        .populate({ path: 'category', model: Category })
+        .populate({ path: 'subcategory', model: SubCategory });
 };
 
 export const update = async (id: string, data: any) => {
