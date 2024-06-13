@@ -9,13 +9,21 @@ interface IProduct extends Document {
     detailedDescription: string;
     stock: number;
     tags: string[];
+    thumbnail: string;
     images: string[];
+    videos: string[];
+    countryOfOrigin: string;
+    modelNumber: string;
+    minimumOrderQuantity: number;
+    isPrivateLabeling: boolean;
+    isSampleAvailable: boolean;
     dimensions: {
         length: number;
         width: number;
         height: number;
         weight: number;
     };
+    uom: string;
     category: mongoose.Schema.Types.ObjectId;
     subcategory?: mongoose.Schema.Types.ObjectId;
     seller: mongoose.Schema.Types.ObjectId;
@@ -28,8 +36,7 @@ const ProductSchema = new mongoose.Schema(
     {
         name: {
             type: String,
-            required: true,
-            unique: true
+            required: true
         },
         price: {
             type: Number,
@@ -57,8 +64,37 @@ const ProductSchema = new mongoose.Schema(
         tags: {
             type: [String]
         },
+        thumbnail: {
+            type: String
+        },
         images: {
             type: [String]
+        },
+        videos: {
+            type: [String]
+        },
+        countryOfOrigin: {
+            type: String,
+            required: true
+        },
+        modelNumber: {
+            type: String,
+            required: true
+        },
+        minimumOrderQuantity: {
+            type: Number,
+            required: true
+        },
+        isPrivateLabeling: {
+            type: Boolean,
+            required: true
+        },
+        isSampleAvailable: {
+            type: Boolean,
+            required: true
+        },
+        uom: {
+            type: String
         },
         dimensions: {
             length: {
@@ -85,7 +121,7 @@ const ProductSchema = new mongoose.Schema(
         },
         subcategory: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Subcategory'
+            ref: 'SubCategory'
         },
         seller: {
             type: mongoose.Schema.Types.ObjectId,
@@ -104,6 +140,7 @@ const ProductSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-const Product: Model<IProduct> = mongoose.models.Product || mongoose.model<IProduct>('Product', ProductSchema);
+const Product: Model<IProduct> =
+    mongoose.models.Product || mongoose.model<IProduct>('Product', ProductSchema);
 
 export default Product;

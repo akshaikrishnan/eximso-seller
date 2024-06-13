@@ -16,7 +16,6 @@ import { useRouter } from 'next/navigation';
 import { Dropdown } from 'primereact/dropdown';
 import { Profile, UserSegment } from '@/lib/types/user';
 import { CountryNameService } from '@/demo/service/CountryService';
-import { AutoComplete, AutoCompleteCompleteEvent } from 'primereact/autocomplete';
 import DocumentCard from '@/components/document-card/DocumentCard';
 
 interface DropdownItem {
@@ -32,8 +31,6 @@ interface InputValue {
 const FormLayout = ({ categories }: { categories: any }) => {
     const queryClient = useQueryClient();
     const router = useRouter();
-    const [dropdownItem, setDropdownItem] = useState<DropdownItem | null>(null);
-    const [countries, setCountries] = useState<string[]>([]);
     const [multiselectValue, setMultiselectValue] = useState(null);
 
     const multiselectValues: InputValue[] = categories.map((category: any) => {
@@ -77,13 +74,6 @@ const FormLayout = ({ categories }: { categories: any }) => {
         }
     });
 
-    const searchCountry = (event: AutoCompleteCompleteEvent) => {
-        let results: any = countries.filter((country) => {
-            return country.toLowerCase().startsWith(event.query.toLowerCase());
-        });
-        return results;
-    };
-
     const {
         control,
         handleSubmit,
@@ -119,9 +109,10 @@ const FormLayout = ({ categories }: { categories: any }) => {
         });
     };
 
-    useEffect(() => {
-        CountryNameService.getCountries().then((countries) => setCountries(countries));
-    }, []);
+    const { data: countries } = useQuery({
+        queryKey: ['countries'],
+        queryFn: () => CountryNameService.getCountries()
+    });
 
     const ifscCheck = (value: string | undefined) => {
         if (value && value.length === 11) {
@@ -266,7 +257,6 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                     rows={6}
                                     id={field.name}
                                     {...field}
-                                    autoFocus
                                     className={classNames({
                                         'p-invalid': fieldState.invalid
                                     })}
@@ -496,7 +486,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                             name="file"
                             url="/api/upload"
                             accept="image/*"
-                            maxFileSize={1000000}
+                            maxFileSize={45000}
                             auto
                             onUpload={onUpload}
                         />

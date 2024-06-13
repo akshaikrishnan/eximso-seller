@@ -1,3 +1,5 @@
+// models/Category.js
+
 import mongoose, { Document, Model } from 'mongoose';
 
 interface ICategory extends Document {
@@ -16,6 +18,7 @@ const CategorySchema = new mongoose.Schema({
     }
 });
 
-const SubCategory: Model<ICategory> = mongoose.models.Category || mongoose.model<ICategory>('Category', CategorySchema);
+const Category: Model<ICategory> =
+    mongoose.models.Category || mongoose.model<ICategory>('Category', CategorySchema);
 
-export default SubCategory;
+export default Category;

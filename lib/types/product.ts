@@ -6,20 +6,24 @@ export interface Product {
     shortDescription: string;
     detailedDescription: string;
     stock: number;
-    tags: string;
-    images: string;
+    tags: string[];
+    thumbnail: string;
+    images: string[];
+    videos: string[];
     countryOfOrigin: string;
     modelNumber: string;
     minimumOrderQuantity: number;
     isPrivateLabeling: boolean;
-    isSampleAvailabe: boolean;
+    isSampleAvailable: boolean;
+    uom: string;
+    rating?: number;
     dimensions: {
         length: number;
         width: number;
         height: number;
         weight: number;
     };
-    category: string;
+    category: string | any;
     subcategory?: string;
     seller: string;
     isActive: boolean;

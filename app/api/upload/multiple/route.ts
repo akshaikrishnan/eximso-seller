@@ -34,8 +34,9 @@ export async function POST(request: Request): Promise<NextResponse> {
         // const blob = await put(filename, request, {
         //   access: 'public',
         // });
-
-        return NextResponse.json(res);
+        const urls = res.map((blob) => blob.url);
+        const downloadUrls = urls.map((url) => `${url}?download=true`);
+        return NextResponse.json({ urls, downloadUrls });
     } catch (error) {
         // The next lines are required for Pages API Routes only
         // export const config = {

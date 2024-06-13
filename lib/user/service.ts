@@ -1,5 +1,6 @@
 import connectDB from '../utils/db';
 import model from './model';
+import Category from '../categories/model';
 
 export const findOne = async (params: any) => {
     await connectDB();
@@ -20,4 +21,10 @@ export const create = async (data: any) => {
 export const update = async (id: string, data: any) => {
     await connectDB();
     return model.findByIdAndUpdate(id, data, { new: true });
+};
+
+export const findDetail = async (id: string) => {
+    await connectDB();
+    const CategoryModel = Category;
+    return model.findById(id).populate('categories');
 };

@@ -1,5 +1,20 @@
+import slugify from 'slugify';
 import connectDB from '../utils/db';
 import model from './model';
+
+export const generateUniqueSlug = async (name: string) => {
+    let slug = slugify(name, { lower: true });
+    let slugExists = await model.findOne({ slug });
+    let count = 1;
+
+    while (slugExists) {
+        slug = `${slugify(name, { lower: true })}-${count}`;
+        slugExists = await model.findOne({ slug });
+        count++;
+    }
+
+    return slug;
+};
 
 export const findOne = async (params: any) => {
     await connectDB();
@@ -9,15 +24,23 @@ export const findOne = async (params: any) => {
 
 export const create = async (data: any) => {
     await connectDB();
-    return model.create(data);
+    const slug = await generateUniqueSlug(data.name);
+    return model.create({ ...data, slug });
 };
 
-export const findAll = async () => {
+export const findAll = async (params: any = {}) => {
     await connectDB();
-    return model.find({ isDelete: false });
+    return model
+        .find({ ...params, isDelete: false })
+        .populate(['category', 'subcategory']);
 };
 
 export const update = async (id: string, data: any) => {
     await connectDB();
     return model.findByIdAndUpdate(id, data);
+};
+
+export const findById = async (id: string) => {
+    await connectDB();
+    return model.findById(id);
 };
