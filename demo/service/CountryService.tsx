@@ -22,12 +22,18 @@ export const CountryNameService = {
 
 export const CategoryService = {
     getCategories() {
-        return fetch('/api/categories', { headers: { 'Cache-Control': 'no-cache' } })
+        return fetch('/api/categories', {
+            headers: { 'Cache-Control': 'no-cache' },
+            cache: 'no-store'
+        })
             .then((res) => res.json())
             .then((d) => d as Demo.Country[]);
     },
     getUserCategories() {
-        return fetch('/api/user-categories', { headers: { 'Cache-Control': 'no-cache' } })
+        return fetch('/api/user-categories', {
+            headers: { 'Cache-Control': 'no-cache' },
+            cache: 'no-store'
+        })
             .then((res) => res.json())
             .then((d) => d as any);
     },
@@ -35,7 +41,8 @@ export const CategoryService = {
         try {
             if (!category) return [];
             return fetch(`/api/sub-categories/${category}`, {
-                headers: { 'Cache-Control': 'no-cache' }
+                headers: { 'Cache-Control': 'no-cache' },
+                cache: 'no-store'
             })
                 .then((res) => res.json())
                 .then((d) => d as any)
