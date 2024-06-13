@@ -11,6 +11,7 @@ import { Toast } from 'primereact/toast';
 import { Dialog } from 'primereact/dialog';
 import { Product } from '@/lib/types/product';
 import { useQuery } from '@tanstack/react-query';
+import Link from 'next/link';
 
 const ListDemo = () => {
     // const [dataViewValue, setDataViewValue] = useState<Product[]>([]);
@@ -144,11 +145,13 @@ const ListDemo = () => {
             <div className="col-12">
                 <Toast ref={toast} />
                 <div className="flex flex-column md:flex-row align-items-center p-3 w-full">
-                    <img
-                        src={`${data.thumbnail}`}
-                        alt={data.name}
-                        className="my-4 md:my-0 w-9 md:w-10rem shadow-2 mr-5"
-                    />
+                    <Link href={`/seller/manage-product/${data._id}`}>
+                        <img
+                            src={`${data.thumbnail}`}
+                            alt={data.name}
+                            className="my-4 md:my-0 w-9 md:w-10rem shadow-2 mr-5"
+                        />
+                    </Link>
                     <div className="flex-1 flex flex-column align-items-center text-center md:text-left">
                         <div className="font-bold text-2xl">{data.name}</div>
                         <div className="mb-2">{data?.shortDescription}</div>
@@ -167,14 +170,26 @@ const ListDemo = () => {
                         <span className="text-2xl font-semibold mb-2 align-self-center md:align-self-end">
                             ${data.price}
                         </span>
-                        <Button
-                            label="Delete"
-                            icon="pi pi-trash"
-                            severity="danger"
-                            onClick={() => confirmDeleteProduct(data)}
-                            size="small"
-                            className="mb-2"
-                        />
+                        <div className="flex gap-2">
+                            <Link href={`/seller/manage-product/${data._id}`}>
+                                <Button
+                                    label="Edit"
+                                    icon="pi pi-pencil"
+                                    severity="warning"
+                                    size="small"
+                                    className="mb-2"
+                                />
+                            </Link>
+                            <Button
+                                label="Delete"
+                                icon="pi pi-trash"
+                                severity="danger"
+                                onClick={() => confirmDeleteProduct(data)}
+                                size="small"
+                                className="mb-2"
+                            />
+                        </div>
+
                         <span
                             className={`product-badge status-${getStockStatus(
                                 data?.stock,
@@ -208,22 +223,29 @@ const ListDemo = () => {
                         </span>
                     </div>
                     <div className="flex flex-column align-items-center text-center mb-3">
-                        <img
-                            src={`${data?.thumbnail}`}
-                            alt={data.name}
-                            className="w-9 shadow-2 my-3 mx-0"
-                        />
+                        <Link href={`/seller/manage-product/${data._id}`}>
+                            <img
+                                src={`${data?.thumbnail}`}
+                                alt={data.name}
+                                className="w-9 shadow-2 my-3 mx-0"
+                            />
+                        </Link>
                         <div className="text-2xl font-bold">{data.name}</div>
                         <div className="mb-3">{data?.shortDescription}</div>
                         <Rating value={data?.rating || 0} readOnly cancel={false} />
                     </div>
                     <div className="flex align-items-center justify-content-between">
                         <span className="text-2xl font-semibold">${data.price}</span>
-                        <Button
-                            icon="pi pi-trash"
-                            severity="danger"
-                            onClick={() => confirmDeleteProduct(data)}
-                        />
+                        <div className="flex gap-2">
+                            <Link href={`/seller/manage-product/${data._id}`}>
+                                <Button icon="pi pi-pencil" severity="warning" />
+                            </Link>
+                            <Button
+                                icon="pi pi-trash"
+                                severity="danger"
+                                onClick={() => confirmDeleteProduct(data)}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -249,7 +271,7 @@ const ListDemo = () => {
         <div className="grid">
             <div className="col-12">
                 <div className="card">
-                    <h5>DataView</h5>
+                    <h5>All Products</h5>
                     <DataView
                         value={filteredValue || dataViewValue}
                         layout={layout}

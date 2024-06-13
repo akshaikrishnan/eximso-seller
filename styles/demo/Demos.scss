@@ -3,3 +3,8 @@
 @import './TimelineDemo.scss';
 // @import './flags/flags.css';
 @import './badges.scss';
+
+.p-dataview-emptymessage {
+    padding: 50px 0 !important;
+    text-align: center;
+}

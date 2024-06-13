@@ -728,6 +728,7 @@ const ProductForm: Page = ({
                     <Button label="Discard" severity="secondary"></Button>
 
                     <Button
+                        loading={mutation.isPending}
                         label={mode === 'update' ? 'Update Product' : 'Add Product'}
                         icon="pi pi-check"
                     ></Button>

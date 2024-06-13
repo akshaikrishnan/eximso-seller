@@ -12,7 +12,7 @@ export default function Loader() {
                     <div></div>
                     <div></div>
                 </div>
-                <div className="text-center text-gray-500">Loading...</div>
+                <div className="text-center text-gray-500 mt-5">Loading...</div>
             </div>
         </div>
     );
