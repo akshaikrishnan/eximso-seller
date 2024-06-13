@@ -24,6 +24,7 @@ import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import axios from 'axios';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 const ProductForm: Page = ({
     mode,
@@ -35,6 +36,7 @@ const ProductForm: Page = ({
     const [autoValue, setAutoValue] = useState<Demo.Country[]>([]);
     const [percentage, setPercentage] = useState(0);
     const queryClient = useQueryClient();
+    const router = useRouter();
 
     useEffect(() => {
         CategoryService.getUserCategories().then((data) => setAutoValue(data));
@@ -54,8 +56,12 @@ const ProductForm: Page = ({
             toast.error(error.response.data.message);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['products'] });
-            toast.success('Product added successfully');
+            queryClient.invalidateQueries({ queryKey: ['products'] }).then(() => {
+                router.push('/seller/products');
+            });
+            toast.success(
+                `Product ${mode === 'update' ? 'updated' : ' added'} successfully`
+            );
         }
     });
 
@@ -725,7 +731,14 @@ const ProductForm: Page = ({
 
             <div className="col-12">
                 <div className="card flex justify-content-between">
-                    <Button label="Discard" severity="secondary"></Button>
+                    <Button
+                        type="reset"
+                        onClick={() => {
+                            router.back();
+                        }}
+                        label="Discard"
+                        severity="secondary"
+                    ></Button>
 
                     <Button
                         loading={mutation.isPending}

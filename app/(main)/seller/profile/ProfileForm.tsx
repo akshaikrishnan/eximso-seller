@@ -681,6 +681,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                 <div className="card flex justify-content-between">
                     <Button
                         label="Discard"
+                        type="reset"
                         onClick={resetForm}
                         severity="secondary"
                     ></Button>

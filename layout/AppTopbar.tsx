@@ -12,7 +12,13 @@ const items = [
         items: [
             {
                 label: 'My Profile',
-                icon: 'pi pi-user'
+                icon: 'pi pi-user',
+                url: '/seller/profile'
+            },
+            {
+                label: 'Reset Password',
+                icon: 'pi pi-lock',
+                url: '/seller/products'
             },
             {
                 label: 'Logout',
@@ -24,7 +30,8 @@ const items = [
 ];
 
 const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
-    const { layoutConfig, layoutState, onMenuToggle, showProfileSidebar } = useContext(LayoutContext);
+    const { layoutConfig, layoutState, onMenuToggle, showProfileSidebar } =
+        useContext(LayoutContext);
     const menubuttonRef = useRef(null);
     const topbarmenuRef = useRef(null);
     const topbarmenubuttonRef = useRef(null);
@@ -39,23 +46,41 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
     return (
         <div className="layout-topbar">
             <Link href="/" className="layout-topbar-logo">
-                <img src={`/layout/images/logo-${layoutConfig.colorScheme !== 'light' ? 'white' : 'dark'}.png`} width="150px" height={'35px'} alt="logo" />
+                <img
+                    src={`/layout/images/logo-${
+                        layoutConfig.colorScheme !== 'light' ? 'white' : 'dark'
+                    }.png`}
+                    width="150px"
+                    height={'35px'}
+                    alt="logo"
+                />
                 {/* <span>SAKAI</span> */}
             </Link>
 
-            <button ref={menubuttonRef} type="button" className="p-link layout-menu-button layout-topbar-button" onClick={onMenuToggle}>
+            <button
+                ref={menubuttonRef}
+                type="button"
+                className="p-link layout-menu-button layout-topbar-button"
+                onClick={onMenuToggle}
+            >
                 <i className="pi pi-bars" />
             </button>
 
-            <button ref={topbarmenubuttonRef} type="button" className="p-link layout-topbar-menu-button layout-topbar-button" onClick={showProfileSidebar}>
+            <button
+                ref={topbarmenubuttonRef}
+                type="button"
+                className="p-link layout-topbar-menu-button layout-topbar-button"
+                onClick={showProfileSidebar}
+            >
                 <i className="pi pi-ellipsis-v" />
             </button>
             <Menu model={items} popup ref={menu} id="popup_menu_left" />
-            <div ref={topbarmenuRef} className={classNames('layout-topbar-menu', { 'layout-topbar-menu-mobile-active': layoutState.profileSidebarVisible })}>
-                <button type="button" className="p-link layout-topbar-button">
-                    <i className="pi pi-calendar"></i>
-                    <span>Calendar</span>
-                </button>
+            <div
+                ref={topbarmenuRef}
+                className={classNames('layout-topbar-menu', {
+                    'layout-topbar-menu-mobile-active': layoutState.profileSidebarVisible
+                })}
+            >
                 <button
                     onClick={(event) => {
                         if (menu) menu.current?.toggle(event);
@@ -68,7 +93,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                 </button>
                 <Link href="/documentation">
                     <button type="button" className="p-link layout-topbar-button">
-                        <i className="pi pi-cog"></i>
+                        <i className="pi pi-question"></i>
                         <span>Settings</span>
                     </button>
                 </Link>
