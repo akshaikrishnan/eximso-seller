@@ -389,23 +389,19 @@ const ProductForm: Page = ({
                         </small>
                     )}
                     <h6>Detailed Description</h6>
+
                     <Controller
                         name="detailedDescription"
                         control={control}
-                        rules={{ required: 'Short Description is required.' }}
+                        rules={{ required: 'Detailed Description is required.' }}
                         render={({ field, fieldState }) => (
-                            <Editor
+                            <InputTextarea
+                                rows={10}
                                 id={field.name}
-                                ref={field.ref}
-                                value={field.value}
-                                onBlur={field.onBlur}
-                                onTextChange={(e) =>
-                                    field.onChange({ target: { value: e.htmlValue } })
-                                }
+                                {...field}
                                 className={classNames({
                                     'p-invalid': fieldState.invalid
                                 })}
-                                style={{ height: '320px' }}
                             />
                         )}
                     />

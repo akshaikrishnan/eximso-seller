@@ -54,7 +54,7 @@ const AppMenu = () => {
                 {
                     label: 'Notifications',
                     icon: 'pi pi-fw pi-bell',
-                    to: '/utilities/icons'
+                    to: '/seller/notifications'
                 }
             ]
         }

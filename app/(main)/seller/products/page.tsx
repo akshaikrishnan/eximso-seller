@@ -7,11 +7,11 @@ import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { Rating } from 'primereact/rating';
 import { ProductService } from '../../../../demo/service/ProductService';
 import { InputText } from 'primereact/inputtext';
-import { Toast } from 'primereact/toast';
 import { Dialog } from 'primereact/dialog';
 import { Product } from '@/lib/types/product';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 const ListDemo = () => {
     // const [dataViewValue, setDataViewValue] = useState<Product[]>([]);
@@ -27,8 +27,6 @@ const ListDemo = () => {
     const [sortField, setSortField] = useState('');
     const [deleteProductDialog, setDeleteProductDialog] = useState(false);
     const [product, setProduct] = useState<Product>({} as Product);
-
-    const toast = React.useRef<Toast>(null);
     const sortOptions = [
         { label: 'Price High to Low', value: '!price' },
         { label: 'Price Low to High', value: 'price' }
@@ -52,6 +50,23 @@ const ListDemo = () => {
             });
         }
     });
+
+    const queryClient = useQueryClient();
+
+    const deleteMutation = useMutation({
+        mutationFn: () => {
+            return ProductService.deleteProduct(product._id || '');
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['products'] });
+            toast.success('Product deleted successfully');
+            setDeleteProductDialog(false);
+        },
+        onError: (error) => {
+            toast.error(error.message);
+        }
+    });
+
     const getStockStatus = (stock: number, minimumOrderQuantity: number) => {
         if (stock <= 0) return 'outofstock';
         if (stock - minimumOrderQuantity >= minimumOrderQuantity * 3) {
@@ -66,7 +81,7 @@ const ListDemo = () => {
         if (value.length === 0) {
             setFilteredValue(null);
         } else {
-            const filtered = dataViewValue?.filter((product) => {
+            const filtered = dataViewValue?.filter((product: any) => {
                 const productNameLowercase = product.name.toLowerCase();
                 const searchValueLowercase = value.toLowerCase();
                 return productNameLowercase.includes(searchValueLowercase);
@@ -84,16 +99,6 @@ const ListDemo = () => {
         setDeleteProductDialog(true);
     };
 
-    const deleteProduct = () => {
-        setDeleteProductDialog(false);
-
-        toast.current?.show({
-            severity: 'success',
-            summary: 'Successful',
-            detail: 'Product Deleted',
-            life: 3000
-        });
-    };
     const deleteProductDialogFooter = (
         <>
             <Button
@@ -102,7 +107,13 @@ const ListDemo = () => {
                 text
                 onClick={hideDeleteProductDialog}
             />
-            <Button label="Yes" icon="pi pi-check" text onClick={deleteProduct} />
+            <Button
+                label="Yes"
+                icon="pi pi-check"
+                loading={deleteMutation.isPending}
+                text
+                onClick={() => deleteMutation.mutate()}
+            />
         </>
     );
     const onSortChange = (event: DropdownChangeEvent) => {
@@ -143,7 +154,6 @@ const ListDemo = () => {
     const dataviewListItem = (data: Product) => {
         return (
             <div className="col-12">
-                <Toast ref={toast} />
                 <div className="flex flex-column md:flex-row align-items-center p-3 w-full">
                     <Link href={`/seller/manage-product/${data._id}`}>
                         <img
@@ -273,6 +283,7 @@ const ListDemo = () => {
                 <div className="card">
                     <h5>All Products</h5>
                     <DataView
+                        loading={isLoading}
                         value={filteredValue || dataViewValue}
                         layout={layout}
                         paginator

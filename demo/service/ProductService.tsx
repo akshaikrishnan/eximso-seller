@@ -17,7 +17,8 @@ export const ProductService = {
             cache: 'no-store'
         })
             .then((res) => res.json())
-            .then((d) => d as Product[]);
+            .then((d) => d as Product[])
+            .catch((e) => e);
     },
 
     getProductsWithOrdersSmall() {
@@ -27,5 +28,12 @@ export const ProductService = {
         })
             .then((res) => res.json())
             .then((d) => d.data as Demo.Product[]);
+    },
+    deleteProduct(id: string) {
+        return fetch(`/api/product/${id}`, {
+            method: 'DELETE',
+            headers: { 'Cache-Control': 'no-cache' },
+            cache: 'no-store'
+        });
     }
 };
