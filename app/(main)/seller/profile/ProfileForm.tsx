@@ -147,11 +147,11 @@ const FormLayout = ({ categories }: { categories: any }) => {
                 <div className="card p-fluid">
                     <h5>Profile</h5>
                     <div className="field">
-                        <label htmlFor="name1">Name</label>
+                        <label htmlFor="name1">Company Name</label>
                         <Controller
                             name="name"
                             control={control}
-                            rules={{ required: 'Name is required.' }}
+                            rules={{ required: 'Company Name is required.' }}
                             render={({ field, fieldState }) => (
                                 <InputText
                                     id={field.name}

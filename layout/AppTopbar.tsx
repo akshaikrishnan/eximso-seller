@@ -6,6 +6,9 @@ import React, { forwardRef, useContext, useImperativeHandle, useRef } from 'reac
 import { AppTopbarRef } from '@/types';
 import { LayoutContext } from './context/layoutcontext';
 import { Menu } from 'primereact/menu';
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
+import { Chip } from 'primereact/chip';
 const items = [
     {
         label: 'Logged In',
@@ -36,6 +39,12 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
     const topbarmenuRef = useRef(null);
     const topbarmenubuttonRef = useRef(null);
     const menu = useRef<Menu>(null);
+    const { data: profile, isLoading } = useQuery({
+        queryKey: ['profile'],
+        queryFn: async () => {
+            return axios.get('/api/user').then((res) => res.data);
+        }
+    });
 
     useImperativeHandle(ref, () => ({
         menubutton: menubuttonRef.current,
@@ -81,6 +90,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                     'layout-topbar-menu-mobile-active': layoutState.profileSidebarVisible
                 })}
             >
+                <Chip label={profile?.name} image={profile?.logo} />
                 <button
                     onClick={(event) => {
                         if (menu) menu.current?.toggle(event);

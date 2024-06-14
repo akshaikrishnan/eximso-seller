@@ -60,6 +60,8 @@ export interface AppMailReplyProps {
     hide: () => void;
 }
 
+declare module '@react-email/components';
+
 declare namespace Demo {
     interface Task {
         id?: number;
@@ -130,7 +132,14 @@ declare namespace Demo {
         inventoryStatus?: InventoryStatus;
         rating?: number;
         orders?: ProductOrder[];
-        [key: string]: string | string[] | number | boolean | undefined | ProductOrder[] | InventoryStatus;
+        [key: string]:
+            | string
+            | string[]
+            | number
+            | boolean
+            | undefined
+            | ProductOrder[]
+            | InventoryStatus;
     };
 
     type ProductOrder = {

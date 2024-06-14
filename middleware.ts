@@ -4,6 +4,13 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
     // Example function to validate auth
     const token = request.cookies.get('access_token')?.value;
+
+    if (request.nextUrl.pathname.startsWith('/auth')) {
+        if (token) {
+            return NextResponse.redirect(new URL('/', request.url));
+        }
+        return NextResponse.next();
+    }
     if (token) {
         return NextResponse.next();
     }
@@ -15,5 +22,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/((?!api|static|auth|.*\\..*|_next|favicon.ico|robots.txt).*)']
+    matcher: ['/((?!api|static|.*\\..*|_next|favicon.ico|robots.txt).*)']
 };
