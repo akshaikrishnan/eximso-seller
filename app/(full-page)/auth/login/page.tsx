@@ -32,7 +32,7 @@ const LoginPage = () => {
     const [userChecked, setUserChecked] = useState(false);
     const { layoutConfig } = useContext(LayoutContext);
     const options = ['Buyer', 'Seller'];
-    const [modalVisible, setModalVisible] = useState(true);
+    const [modalVisible, setModalVisible] = useState(false);
     const router = useRouter();
     const [value, setValue] = useState(options[0]);
     const formRef = useRef<HTMLFormElement>(null);
