@@ -76,7 +76,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
         const token = sign({ email }, process.env.JWT_SECRET!, { expiresIn: '2m' });
         const url = `${
             process.env.VERCEL_URL || 'http://localhost:3000'
-        }/api/forgot-password?token=${token}`;
+        }/api/auth/forgot-password?token=${token}`;
         const { data, error } = await resend.emails.send({
             from: 'Eximso <onboarding@resend.dev>',
             to: ['eximsodev@gmail.com'],
