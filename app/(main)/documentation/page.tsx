@@ -16,11 +16,11 @@ const EximsoDocumentation = () => {
                         <h5>Add Product Module</h5>
                         <p>
                             The Add Product module allows you to introduce new items into
-                            your catalog. Here's how to get started:
+                            your catalog. Here&lsquo;s how to get started:
                             <ol>
                                 <li>
-                                    Navigate to the 'Add Product' section in your
-                                    dashboard.
+                                    Navigate to the &apos;Add Product&apos; section in
+                                    your dashboard.
                                 </li>
                                 <li>
                                     Fill in the product details, including name,
