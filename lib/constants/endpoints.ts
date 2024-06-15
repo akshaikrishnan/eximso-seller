@@ -10,6 +10,9 @@ export const endpoints = {
     user: '/api/user',
 
     //upload
-    singleUpload: '/api/upload',
-    multipleUpload: '/api/upload/multiple'
+    // singleUpload: '/api/upload',
+    // multipleUpload: '/api/upload/multiple',
+
+    singleUpload: '/api/s3-upload',
+    multipleUpload: '/api/s3-upload/multiple'
 } as const;

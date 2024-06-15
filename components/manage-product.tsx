@@ -31,6 +31,8 @@ const Editor = dynamic(() => import('react-quill'), {
     ssr: false
 });
 import 'react-quill/dist/quill.snow.css';
+import { endpoints } from '@/lib/constants/endpoints';
+import Link from 'next/link';
 
 const ProductForm: Page = ({
     mode,
@@ -288,6 +290,13 @@ const ProductForm: Page = ({
                             />
                         )}
                     />
+                    <small>
+                        Can&apos;t find your category? Please check your selling
+                        categories in{' '}
+                        <Link href="/seller/profile">
+                            Profile section <br />
+                        </Link>
+                    </small>
                     {errors.category && (
                         <small className="p-error">
                             {typeof errors?.category?.message === 'string'
@@ -316,9 +325,11 @@ const ProductForm: Page = ({
                                 placeholder="Select a Category"
                                 options={subCategories}
                                 optionValue="_id"
+                                emptyMessage={
+                                    isLoading ? 'Loading...' : 'No Subcategories found'
+                                }
                                 filter
                                 optionLabel="name"
-                                emptyMessage={`No Subcategories found`}
                             />
                         )}
                     />
@@ -479,7 +490,7 @@ const ProductForm: Page = ({
                         <FileUpload
                             mode="basic"
                             name="file"
-                            url="/api/upload"
+                            url={endpoints.singleUpload}
                             accept="image/*"
                             maxFileSize={45000}
                             auto
@@ -491,7 +502,7 @@ const ProductForm: Page = ({
                     <h5>Upload Images</h5>
                     <FileUpload
                         name="file"
-                        url={'/api/upload/multiple'}
+                        url={endpoints.multipleUpload}
                         multiple
                         accept="image/*"
                         maxFileSize={10000000}
@@ -522,7 +533,7 @@ const ProductForm: Page = ({
                     <h5>Product Videos</h5>
                     <FileUpload
                         name="file"
-                        url={'/api/upload/multiple'}
+                        url={endpoints.multipleUpload}
                         multiple
                         accept="video/*"
                         maxFileSize={700000}

@@ -17,6 +17,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { Profile, UserSegment } from '@/lib/types/user';
 import { CountryNameService } from '@/demo/service/CountryService';
 import DocumentCard from '@/components/document-card/DocumentCard';
+import { endpoints } from '@/lib/constants/endpoints';
 
 interface DropdownItem {
     name: string;
@@ -484,7 +485,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                         <FileUpload
                             mode="basic"
                             name="file"
-                            url="/api/upload"
+                            url={endpoints.singleUpload}
                             accept="image/*"
                             maxFileSize={45000}
                             auto
@@ -506,7 +507,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                         <FileUpload
                             mode="basic"
                             name="file"
-                            url="/api/upload"
+                            url={endpoints.singleUpload}
                             accept="image/jpeg,image/gif,image/png,application/pdf,image/x-eps"
                             maxFileSize={1000000}
                             auto
@@ -528,7 +529,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                         <FileUpload
                             mode="basic"
                             name="file"
-                            url="/api/upload"
+                            url={endpoints.singleUpload}
                             accept="image/jpeg,image/gif,image/png,application/pdf,image/x-eps"
                             maxFileSize={1000000}
                             auto
