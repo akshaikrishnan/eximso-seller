@@ -12,7 +12,7 @@ import { AutoComplete, AutoCompleteCompleteEvent } from 'primereact/autocomplete
 import { Button } from 'primereact/button';
 import { Chips } from 'primereact/chips';
 import { Dropdown } from 'primereact/dropdown';
-import { Editor } from 'primereact/editor';
+// import { Editor } from 'primereact/editor';
 import { FileUpload, FileUploadUploadEvent } from 'primereact/fileupload';
 import { InputNumber } from 'primereact/inputnumber';
 import { InputText } from 'primereact/inputtext';
@@ -25,6 +25,12 @@ import { Controller, useForm } from 'react-hook-form';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
+
+const Editor = dynamic(() => import('react-quill'), {
+    ssr: false
+});
+import 'react-quill/dist/quill.snow.css';
 
 const ProductForm: Page = ({
     mode,
@@ -395,10 +401,12 @@ const ProductForm: Page = ({
                         control={control}
                         rules={{ required: 'Detailed Description is required.' }}
                         render={({ field, fieldState }) => (
-                            <InputTextarea
-                                rows={10}
+                            <Editor
                                 id={field.name}
-                                {...field}
+                                value={field.value}
+                                onChange={field.onChange}
+                                onBlur={field.onBlur}
+                                defaultValue={'afsdsd'}
                                 className={classNames({
                                     'p-invalid': fieldState.invalid
                                 })}
