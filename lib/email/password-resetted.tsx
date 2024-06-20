@@ -16,17 +16,15 @@ import * as React from 'react';
 interface EximsoResetPasswordEmailProps {
     username?: string;
     updatedDate?: Date;
-    url: string;
 }
 
 const baseUrl = process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
     : 'https://eximso-seller.vercel.app';
 
-export const EximsoResetPasswordEmail = ({
+export const EximsoResetDone = ({
     username,
-    updatedDate,
-    url
+    updatedDate
 }: EximsoResetPasswordEmailProps) => {
     const formattedDate = new Intl.DateTimeFormat('en', {
         dateStyle: 'medium',
@@ -52,22 +50,14 @@ export const EximsoResetPasswordEmail = ({
                     <Section style={content}>
                         <Text style={paragraph}>Hi {username},</Text>
                         <Text style={paragraph}>
-                            You have requsted to reset the password of your Eximso account
-                            on {formattedDate}. If this was you, then please click the
-                            link below.
+                            You updated the password for your Eximso account on{' '}
+                            {formattedDate}. If this was you, then no further action is
+                            required.
                         </Text>
+
                         <Text style={paragraph}>
-                            <Link href={url} style={link}>
-                                reset your account password
-                            </Link>{' '}
-                        </Text>
-                        <Text style={paragraph}>
-                            Remember to use a password that is both strong and unique to
-                            your Eximso account. To learn more about how to create a
-                            strong and unique password,{' '}
-                        </Text>
-                        <Text style={paragraph}>
-                            Still have questions? Please contact{' '}
+                            However if you did NOT perform this password change, please
+                            contact{' '}
                             <Link href="https://eximso.com/help" style={link}>
                                 Eximso Support
                             </Link>
@@ -93,12 +83,12 @@ export const EximsoResetPasswordEmail = ({
     );
 };
 
-EximsoResetPasswordEmail.PreviewProps = {
+EximsoResetDone.PreviewProps = {
     username: 'alanturing',
     updatedDate: new Date('June 23, 2022 4:06:00 pm UTC')
 } as EximsoResetPasswordEmailProps;
 
-export default EximsoResetPasswordEmail;
+export default EximsoResetDone;
 
 const fontFamily = 'HelveticaNeue,Helvetica,Arial,sans-serif';
 

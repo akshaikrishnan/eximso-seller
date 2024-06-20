@@ -4,6 +4,8 @@ import { sign, verify } from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
+import { render } from '@react-email/render';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function GET(req: NextRequest, res: NextResponse) {
@@ -73,28 +75,45 @@ export async function POST(req: NextRequest, res: NextResponse) {
                 { status: 404 }
             );
         }
-        const token = sign({ email }, process.env.JWT_SECRET!, { expiresIn: '2m' });
+        const token = sign({ email }, process.env.JWT_SECRET!, { expiresIn: '5m' });
         const url = `${
             process.env.VERCEL_URL || 'http://localhost:3000'
         }/api/auth/forgot-password?token=${token}`;
-        const { data, error } = await resend.emails.send({
-            from: 'Eximso <onboarding@resend.dev>',
-            to: ['eximsodev@gmail.com'],
-            subject: 'Reset Password',
-            react: TwitchResetPasswordEmail({
+
+        const transporter = nodemailer.createTransport({
+            service: 'Gmail',
+            auth: {
+                user: process.env.GMAIL_USER,
+                pass: process.env.GMAIL_PASS
+            }
+        });
+
+        const emailHtml = render(
+            TwitchResetPasswordEmail({
                 username: user.name,
                 updatedDate: new Date(),
                 url
             })
+        );
+        // const { data, error } = await resend.emails.send({
+        //     from: 'Eximso <onboarding@resend.dev>',
+        //     to: [email],
+        //     subject: 'Reset Password',
+        //     react: TwitchResetPasswordEmail({
+        //         username: user.name,
+        //         updatedDate: new Date(),
+        //         url
+        //     })
+        // });
+
+        const info = await transporter.sendMail({
+            from: 'Eximso <eximsodev@gmail.com>',
+            to: email,
+            subject: 'Reset Password',
+            html: emailHtml
         });
-        if (error) {
-            return NextResponse.json(
-                {
-                    error
-                },
-                { status: 512 }
-            );
-        }
+        console.log(info);
+
         return NextResponse.json(
             {
                 message: `Reset Password Email has sent to ${email}. Please check your inbox`

@@ -21,7 +21,7 @@ const items = [
             {
                 label: 'Reset Password',
                 icon: 'pi pi-lock',
-                url: '/seller/products'
+                url: '/reset-password'
             },
             {
                 label: 'Logout',
