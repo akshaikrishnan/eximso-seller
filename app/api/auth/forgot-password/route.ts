@@ -77,7 +77,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
         }
         const token = sign({ email }, process.env.JWT_SECRET!, { expiresIn: '5m' });
         const url = `${
-            process.env.VERCEL_URL || 'http://localhost:3000'
+            process.env.VERCEL_PROJECT_PRODUCTION_URL || 'http://localhost:3000'
         }/api/auth/forgot-password?token=${token}`;
 
         const transporter = nodemailer.createTransport({
