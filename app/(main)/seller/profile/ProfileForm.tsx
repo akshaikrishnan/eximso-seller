@@ -508,7 +508,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                             mode="basic"
                             name="file"
                             url={endpoints.singleUpload}
-                            accept="image/jpeg,image/gif,image/png,application/pdf,image/x-eps"
+                            accept="image/jpeg,image/jpg,image/gif,image/png,application/pdf,image/x-eps"
                             maxFileSize={1000000}
                             auto
                             onUpload={onGstUpload}
@@ -530,7 +530,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                             mode="basic"
                             name="file"
                             url={endpoints.singleUpload}
-                            accept="image/jpeg,image/gif,image/png,application/pdf,image/x-eps"
+                            accept="image/jpeg,image/jpg,image/gif,image/png,application/pdf,image/x-eps"
                             maxFileSize={1000000}
                             auto
                             onUpload={onChequeUpload}
