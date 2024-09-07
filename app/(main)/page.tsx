@@ -17,7 +17,7 @@ const lineData: ChartData = {
     datasets: [
         {
             label: 'First Dataset',
-            data: [65, 59, 80, 81, 56, 55, 40],
+            data: [0, 0, 0, 0, 0, 0, 0],
             fill: false,
             backgroundColor: '#2f4860',
             borderColor: '#2f4860',
@@ -25,7 +25,7 @@ const lineData: ChartData = {
         },
         {
             label: 'Second Dataset',
-            data: [28, 48, 40, 19, 86, 27, 90],
+            data: [0, 0, 0, 0, 0, 0, 0],
             fill: false,
             backgroundColor: '#00bb7e',
             borderColor: '#00bb7e',
