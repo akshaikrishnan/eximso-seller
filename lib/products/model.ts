@@ -96,6 +96,14 @@ const ProductSchema = new mongoose.Schema(
         uom: {
             type: String
         },
+        slug: {
+            type: String,
+            required: true,
+            unique: true
+        },
+        color: {
+            type: String
+        },
         dimensions: {
             length: {
                 type: Number,
