@@ -37,18 +37,39 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
     const { email, password } = await req.json();
     if (!email || !password) {
-        return NextResponse.json({ message: 'Invalid email or password' }, { status: 401 });
+        return NextResponse.json(
+            { message: 'Invalid email or password' },
+            { status: 401 }
+        );
     }
     const user = await findOne({ email: email });
     if (!user) {
-        return NextResponse.json({ message: 'Invalid email or password' }, { status: 401 });
+        return NextResponse.json(
+            { message: 'Invalid email or password' },
+            { status: 401 }
+        );
     }
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-        return NextResponse.json({ message: 'Invalid email or password' }, { status: 401 });
+        return NextResponse.json(
+            { message: 'Invalid email or password' },
+            { status: 401 }
+        );
     }
-    const token = jwt.sign({ id: user._id.toString(), email: email }, process.env.JWT_SECRET!, { expiresIn: '7d' });
+    const token = jwt.sign(
+        { id: user._id.toString(), email: email },
+        process.env.JWT_SECRET!,
+        { expiresIn: '7d' }
+    );
     const url = new URL('/api/auth/login', req.url);
     url.searchParams.set('token', token);
-    return NextResponse.json({ message: `Welcome back ${user.name || user.email}!`, redirectUrl: url, token: token }, { status: 200 });
+    url.searchParams.set('userType', 'Seller');
+    return NextResponse.json(
+        {
+            message: `Welcome back ${user.name || user.email}!`,
+            redirectUrl: url,
+            token: token
+        },
+        { status: 200 }
+    );
 }

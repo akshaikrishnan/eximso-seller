@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useContext, useRef, useState } from 'react';
 import { Checkbox } from 'primereact/checkbox';
 import { Button } from 'primereact/button';
@@ -34,13 +34,15 @@ const LoginPage = () => {
     const options = ['Buyer', 'Seller'];
     const [modalVisible, setModalVisible] = useState(false);
     const router = useRouter();
-    const [value, setValue] = useState(options[0]);
+    const searchParams = useSearchParams();
+    const userType = searchParams.get('userType');
+    const [value, setValue] = useState(userType || options[0]);
     const formRef = useRef<HTMLFormElement>(null);
     const redirectUser = (token: string) => {
         if (isNewUser) router.push(`/onboarding`);
         else router.push(`/api/auth/login?token=${token}`);
     };
-
+    const buyerDomain = process.env.NEXT_PUBLIC_BUYER_DOMAIN;
     const {
         control,
         handleSubmit,
@@ -58,6 +60,12 @@ const LoginPage = () => {
         onSuccess: (data) => {
             toast.dismiss('login-loading');
             toast.success(data.data.message);
+            if (value === 'Buyer') {
+                router.push(
+                    `${buyerDomain}api/login=${data.data.token}&newUser=${data.data.newUser}`
+                );
+                return;
+            }
             if (data.data.newUser) {
                 router.push('/onboarding');
             } else {
@@ -80,7 +88,14 @@ const LoginPage = () => {
             setUserChecked(true);
             toast.success(data.data.message);
             setIsNewUser(data.data.isNewUser);
+
             if (data.data.token) {
+                if (value === 'Buyer') {
+                    router.push(
+                        `${buyerDomain}api/login?token=${data.data.token}&newUser=${data.data.newUser}`
+                    );
+                    return;
+                }
                 redirectUser(data.data.token);
             }
         },
