@@ -62,7 +62,7 @@ const LoginPage = () => {
             toast.success(data.data.message);
             if (value === 'Buyer') {
                 router.push(
-                    `${buyerDomain}api/login=${data.data.token}&newUser=${data.data.newUser}`
+                    `${buyerDomain}api/login?token=${data.data.token}&newUser=${data.data.newUser}`
                 );
                 return;
             }
