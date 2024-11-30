@@ -81,7 +81,7 @@ const LoginPage = () => {
     const mutation = useMutation({
         mutationFn: (data: any) => {
             if (!userChecked) return axios.post(endpoints.checkUser, data);
-            if (isNewUser) return axios.post(endpoints.register, data);
+            if (isNewUser) return axios.post(endpoints.register, { ...data, userType });
             return axios.post(endpoints.login, data);
         },
         onSuccess: (data) => {
