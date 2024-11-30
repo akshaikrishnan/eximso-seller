@@ -63,7 +63,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
     const info = await transporter.sendMail({
         from: 'Eximso <eximsodev@gmail.com>',
         to: email,
-        bcc: 'eximsodev@gmail.com',
+        bcc: 'vinod@eximso.com',
         subject: 'Welcome to Eximso!',
         html: emailHtml
     });
