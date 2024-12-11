@@ -476,6 +476,13 @@ const ProductForm: Page = ({
                             />
                         )}
                     />
+                    <small>
+                        Type and hit{' '}
+                        <kbd className="border-solid border-round-sm surface-border border-1 px-1">
+                            Enter
+                        </kbd>{' '}
+                        key to add Tag
+                    </small>
                     {errors.tags && (
                         <small className="p-error">{errors?.tags?.message}</small>
                     )}
