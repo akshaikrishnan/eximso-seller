@@ -183,14 +183,22 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                 }
                             }}
                             render={({ field, fieldState }) => (
-                                <InputText
-                                    readOnly
-                                    id={field.name}
-                                    {...field}
-                                    className={classNames({
-                                        'p-invalid': fieldState.invalid
-                                    })}
-                                />
+                                <div
+                                    className="p-inputgroup"
+                                    title="Email cannot change after account creation!"
+                                >
+                                    <InputText
+                                        readOnly
+                                        id={field.name}
+                                        {...field}
+                                        className={classNames({
+                                            'p-invalid': fieldState.invalid
+                                        })}
+                                    />
+                                    <span className="p-inputgroup-addon">
+                                        <i className="pi pi-lock"></i>
+                                    </span>
+                                </div>
                             )}
                         />
                         {errors.email && (
@@ -539,7 +547,9 @@ const FormLayout = ({ categories }: { categories: any }) => {
                     </div>
                 </div>
                 <div className="card p-fluid">
-                    <h5>Bank Details</h5>
+                    <h5>
+                        Bank Details <span className="text-sm text-400">(optional)</span>
+                    </h5>
                     <div>
                         <div className="field">
                             <label htmlFor="bank">Account Holder Name</label>
