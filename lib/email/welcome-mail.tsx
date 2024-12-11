@@ -37,14 +37,14 @@ export const KoalaWelcomeEmail = ({ userFirstname, url }: KoalaWelcomeEmailProps
                 <Text style={paragraph}>Hi {userFirstname},</Text>
                 <Text style={paragraph}>
                     <Text>
-                        Welcome to Eximso! We're thrilled to have you on board and excited
-                        to help you navigate the world of exporting.
+                        Welcome to Eximso! We&apos;re thrilled to have you on board and
+                        excited to help you navigate the world of exporting.
                     </Text>
                     <Text>
                         Eximso simplifies the export process, making it easier than ever
-                        to get your products to international markets. Whether you're a
-                        seasoned exporter or just starting out, we offer a range of tools
-                        and resources to streamline your journey.
+                        to get your products to international markets. Whether you&apos;re
+                        a seasoned exporter or just starting out, we offer a range of
+                        tools and resources to streamline your journey.
                     </Text>
                 </Text>
 
