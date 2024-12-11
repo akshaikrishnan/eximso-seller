@@ -184,6 +184,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                             }}
                             render={({ field, fieldState }) => (
                                 <InputText
+                                    readOnly
                                     id={field.name}
                                     {...field}
                                     className={classNames({
@@ -545,7 +546,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                             <Controller
                                 name="bank.accountHolderName"
                                 control={control}
-                                rules={{ required: 'Account Holder Name is required.' }}
+                                // rules={{ required: 'Account Holder Name is required.' }}
                                 render={({ field, fieldState }) => (
                                     <InputText
                                         {...field}
@@ -568,7 +569,6 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                 name="bank.ifsc"
                                 control={control}
                                 rules={{
-                                    required: 'IFSC is required.',
                                     pattern: {
                                         value: /^[A-Z]{4}\d{7}$/,
                                         message: 'Invalid IFSC code'
@@ -608,7 +608,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                 name="bank.accountNo"
                                 control={control}
                                 rules={{
-                                    required: 'Account Number is required.',
+                                    // required: 'Account Number is required.',
                                     pattern: {
                                         value: /^[0-9]{10,18}$/,
                                         message: 'Invalid Account Number'
@@ -636,7 +636,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                             <Controller
                                 name="bank.name"
                                 control={control}
-                                rules={{ required: 'Bank Name is required.' }}
+                                // rules={{ required: 'Bank Name is required.' }}
                                 render={({ field, fieldState }) => (
                                     <InputText
                                         {...field}
