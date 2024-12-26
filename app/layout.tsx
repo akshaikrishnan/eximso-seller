@@ -8,6 +8,7 @@ import '../styles/layout/layout.scss';
 import '../styles/demo/Demos.scss';
 import RootProvider from '@/providers/providers';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import HelpFloat from '@/demo/components/helpFloat';
 
 interface RootLayoutProps {
     children: React.ReactNode;
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             <body>
                 <RootProvider>
                     {children}
+                    <HelpFloat />
                     <ReactQueryDevtools initialIsOpen={false} />
                 </RootProvider>
             </body>
