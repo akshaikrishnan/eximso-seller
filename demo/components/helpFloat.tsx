@@ -7,7 +7,7 @@ export default function HelpFloat() {
             className="fixed bottom-0 left-0 font-bold "
             style={{ minWidth: 120, minHeight: 40, zIndex: 1000 }}
         >
-            <Link href="https://wa.me/919961535940" target="_blank">
+            <Link href="https://wa.me/919037850541" target="_blank">
                 <Button
                     icon="pi pi-question"
                     rounded
