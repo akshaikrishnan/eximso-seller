@@ -20,6 +20,8 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { decodeJWT } from '@/lib/utils/getDataFromToken';
 import { Dialog } from 'primereact/dialog';
+import Link from 'next/link';
+import AppFooter from '@/layout/AppFooter';
 
 type LoginInputs = {
     email: string;
@@ -310,8 +312,20 @@ const LoginPage = () => {
                                                 Forgot password?
                                             </a>
                                         </div>
+                                        {isNewUser && (
+                                            <div>
+                                                By Signing up you agree to our{' '}
+                                                <Link
+                                                    href="/policy/seller-terms-and-conditions"
+                                                    target="_blank"
+                                                >
+                                                    terms and conditions
+                                                </Link>
+                                            </div>
+                                        )}
                                     </>
                                 )}
+
                                 <div className="pt-3">
                                     <Button
                                         label={
@@ -353,6 +367,9 @@ const LoginPage = () => {
                         </form>
                     </div>
                 </div>
+            </div>
+            <div style={{ position: 'absolute', bottom: '10px', width: '100%' }}>
+                <AppFooter />
             </div>
 
             <Dialog
