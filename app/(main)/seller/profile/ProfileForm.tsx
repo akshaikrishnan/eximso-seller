@@ -22,7 +22,7 @@ import Link from 'next/link';
 import { Message } from 'primereact/message';
 
 interface DropdownItem {
-    name: string;
+    name: string; 
     code: string;
 }
 interface InputValue {
@@ -146,7 +146,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
 
     return (
         <>
-            {!profile?.phone && (
+            {/* {!profile?.phone && (
                 <Link href="/seller/profile">
                     <Message
                         severity="warn"
@@ -154,13 +154,13 @@ const FormLayout = ({ categories }: { categories: any }) => {
                         text="Please add your phone number in your profile settings to continue adding products."
                     />
                 </Link>
-            )}
+            )} */}
 
             <form className="grid" onSubmit={handleSubmit(onSubmit)}>
                 <div className="col-12 md:col-6">
-                    <div className="card p-fluid">
+                    <div className="card p-fluid">                  
                         <h5>Profile</h5>
-                        <div className="field">
+                        <div className="field">    
                             <label htmlFor="name1">Company Name</label>
                             <Controller
                                 name="name"
