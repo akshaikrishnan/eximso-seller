@@ -326,7 +326,7 @@ const LoginPage = () => {
                                     </>
                                 )}
 
-                                <div className="pt-3">
+                                <div className="pt-3  ">
                                     <Button
                                         label={
                                             userChecked
@@ -368,7 +368,7 @@ const LoginPage = () => {
                     </div>
                 </div>
             </div>
-            <div style={{ position: 'absolute', bottom: '10px', width: '100%' }}>
+            <div  style={{ position: 'absolute', bottom: '-80px', width: '100%' }}>
                 <AppFooter />
             </div>
 
@@ -397,3 +397,4 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+

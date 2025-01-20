@@ -4,7 +4,6 @@ import React, { useContext } from 'react';
 import AppMenuitem from './AppMenuitem';
 import { LayoutContext } from './context/layoutcontext';
 import { MenuProvider } from './context/menucontext';
-import Link from 'next/link';
 import { AppMenuItem } from '@/types';
 
 const AppMenu = () => {
@@ -71,19 +70,7 @@ const AppMenu = () => {
                     );
                 })}
 
-                <Link
-                    href="https://blocks.primereact.org"
-                    target="_blank"
-                    style={{ cursor: 'pointer' }}
-                >
-                    <img
-                        alt="Prime Blocks"
-                        className="w-full mt-3"
-                        src={`/layout/images/banner${
-                            layoutConfig.colorScheme === 'light' ? '' : '-dark'
-                        }.jpeg`}
-                    />
-                </Link>
+                
             </ul>
         </MenuProvider>
     );

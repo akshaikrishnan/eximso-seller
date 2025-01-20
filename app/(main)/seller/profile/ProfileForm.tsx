@@ -146,15 +146,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
 
     return (
         <>
-            {!profile?.phone && (
-                <Link href="/seller/profile">
-                    <Message
-                        severity="warn"
-                        className="w-full mb-3"
-                        text="Please add your phone number in your profile settings to continue adding products."
-                    />
-                </Link>
-            )}
+            
 
             <form className="grid" onSubmit={handleSubmit(onSubmit)}>
                 <div className="col-12 md:col-6">

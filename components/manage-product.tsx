@@ -254,7 +254,7 @@ const ProductForm: Page = ({
                                         validate: (value) =>
                                             value
                                                 ? value < priceWatch ||
-                                                  'Offer price should be less than original price'
+                                                'Offer price should be less than original price'
                                                 : true
                                     }}
                                     render={({ field, fieldState }) => (
