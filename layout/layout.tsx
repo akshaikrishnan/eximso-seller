@@ -13,6 +13,10 @@ import { LayoutContext } from './context/layoutcontext';
 import { PrimeReactContext } from 'primereact/api';
 import { ChildContainerProps, LayoutState, AppTopbarRef } from '@/types';
 import { usePathname, useSearchParams } from 'next/navigation';
+import axios from 'axios';
+import { useQuery } from '@tanstack/react-query';
+import Link from 'next/link';
+import { Message } from 'primereact/message';
 
 const Layout = ({ children }: ChildContainerProps) => {
     const { layoutConfig, layoutState, setLayoutState } = useContext(LayoutContext);
@@ -32,6 +36,12 @@ const Layout = ({ children }: ChildContainerProps) => {
             if (isOutsideClicked) {
                 hideMenu();
             }
+        }
+    });
+    const { data: profile, isLoading } = useQuery({
+        queryKey: ['profile'],
+        queryFn: async () => {
+            return axios.get('/api/user').then((res) => res.data);
         }
     });
 
@@ -130,6 +140,17 @@ const Layout = ({ children }: ChildContainerProps) => {
                     <AppSidebar />
                 </div>
                 <div className="layout-main-container">
+                <div>
+                {!profile?.phone && (
+                <Link href="/seller/profile">
+                    <Message
+                        severity="warn"
+                        className="w-full mb-3"
+                        text="Please add your phone number in your profile settings to continue adding products."
+                    />
+                </Link>
+            )}
+                </div>
                     <div className="layout-main">{children}</div>
                     <AppFooter />
                 </div>

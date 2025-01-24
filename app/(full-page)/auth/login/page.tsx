@@ -344,7 +344,8 @@ const LoginPage = () => {
                                     <Divider align="center">
                                         <span className="p-tag">OR</span>
                                     </Divider>
-                                    <GoogleLogin
+                                  <div  className="flex justify-content-center w-full">
+                                  <GoogleLogin
                                         useOneTap
                                         onSuccess={(credentialResponse) => {
                                             decodeJWT(
@@ -362,13 +363,14 @@ const LoginPage = () => {
                                             toast.error('Login Failed');
                                         }}
                                     />
+                                  </div>
                                 </div>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
-            <div style={{ position: 'absolute', bottom: '10px', width: '100%' }}>
+            <div style={{ position: 'absolute', bottom: 'auto', width: '100%' }}>
                 <AppFooter />
             </div>
 
