@@ -13,7 +13,7 @@ const AppFooter = ({ isSeller }: { isSeller?: boolean }) => {
             <span className="font-medium mx-2">Eximso</span> |{' '}
             <Link
                 className="ml-2"
-                href="/policy/seller-terms-and-conditions"
+                href="//seller.eximso.com/policy/seller-terms-and-conditions"
                 target="_blank"
             >
                 Seller Agreement

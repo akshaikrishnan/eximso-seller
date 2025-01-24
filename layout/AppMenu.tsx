@@ -28,7 +28,12 @@ const AppMenu = () => {
                     label: 'All Products',
                     icon: 'pi pi-fw pi-bookmark',
                     to: '/seller/products'
-                }
+                },
+                {
+                    label: 'Privacy & Policy',
+                    icon: 'pi pi-fw pi-check-square',
+                    url: 'https://seller.eximso.com/policy/seller-terms-and-conditions'
+                },
             ]
         },
         {
