@@ -188,6 +188,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                 name="email"
                                 control={control}
                                 rules={{
+
                                     required: 'Email is required.',
                                     pattern: {
                                         value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -228,7 +229,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                 rules={{
                                     required: 'Phone is required.',
                                     pattern: {
-                                        value: /^[0-9]{10}$/,
+                                        value: /^[0-9]{10  }$/,
                                         message: 'Invalid phone number.'
                                     }
                                 }}
@@ -299,7 +300,35 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                 </small>
                             )}
                         </div>
-                        <div className="field">
+                <div className="field">
+                  <label htmlFor="postalCode">Postal Code / ZIP Code</label>
+                     <Controller
+                        name="postalCode"
+                        control={control}
+                         rules={{
+                         required: 'Postal code is required',
+                         pattern: {
+                            value: /^[0-9]{5}(-[0-9]{4})?$/, // Adjust for your country/format
+                            message: 'Invalid postal code format'
+                        }
+                    }}
+                    render={({ field, fieldState }) => (
+                        <InputText
+                            id={field.name}
+                            {...field}
+                            className={classNames({
+                                'p-invalid': fieldState.invalid
+                            })}
+                        />
+                    )}
+                />
+                    {errors.postalCode && (
+                    <small className="p-error">
+                        {errors?.postalCode?.message}
+                    </small>
+                    )}
+                  </div>
+                           <div className="field">
                             <label htmlFor="name1">
                                 GST Number / Any other registration number
                             </label>
@@ -366,7 +395,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                             'p-invalid': fieldState.invalid
                                         })}
                                     />
-                                )}
+                                )}  
                             />
                             {errors.name && (
                                 <small className="p-error">{errors?.name?.message}</small>
@@ -405,7 +434,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                             ) : null}
                         </div>
                     </div>
-                    <div className="card p-fluid">
+                    {/* <div className="card p-fluid">
                         <h5>Authorized Person Details</h5>
                         <div className="field">
                             <label htmlFor="name1">Name</label>
@@ -509,7 +538,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                 </small>
                             )}
                         </div>
-                    </div>
+                    </div> */}
                 </div>
 
                 <div className="col-12 md:col-6">
@@ -550,7 +579,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                             />
                         </div>
                     </div>
-                    <div className="card p-fluid">
+                    {/* <div className="card p-fluid">
                         <h5>Cancelled cheque / Bank statement </h5>
                         <div className="flex justify-content-center flex-column align-items-center gap-3">
                             <DocumentCard
@@ -571,8 +600,8 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                 onUpload={onChequeUpload}
                             />
                         </div>
-                    </div>
-                    <div className="card p-fluid">
+                    </div> */}
+                    {/* <div className="card p-fluid">
                         <h5>
                             Bank Details{' '}
                             <span className="text-sm text-400">(optional)</span>
@@ -711,6 +740,111 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                     </small>
                                 )}
                             </div>
+                        </div>
+                    </div> */}
+                    <div className="card p-fluid">
+                        <h5>Authorized Person Details</h5>
+                        <div className="field">
+                            <label htmlFor="name1">Name</label>
+                            <Controller
+                                name="authPerson.name"
+                                control={control}
+                                rules={{ required: 'Name is required.' }}
+                                render={({ field, fieldState }) => (
+                                    <InputText
+                                        {...field}
+                                        id={field.name}
+                                        className={classNames({
+                                            'p-invalid': fieldState.invalid
+                                        })}
+                                    />
+                                )}
+                            />
+                            {errors.authPerson?.name && (
+                                <small className="p-error">
+                                    {errors?.authPerson?.name?.message}
+                                </small>
+                            )}
+                        </div>
+                        <div className="field">
+                            <label htmlFor="designation">Designation</label>
+                            <Controller
+                                name="authPerson.designation"
+                                control={control}
+                                rules={{ required: 'Designation is required.' }}
+                                render={({ field, fieldState }) => (
+                                    <InputText
+                                        {...field}
+                                        id={field.name}
+                                        className={classNames({
+                                            'p-invalid': fieldState.invalid
+                                        })}
+                                    />
+                                )}
+                            />
+                            {errors.authPerson?.designation && (
+                                <small className="p-error">
+                                    {errors?.authPerson?.designation?.message}
+                                </small>
+                            )}
+                        </div>
+                        <div className="field">
+                            <label htmlFor="mobile">Mobile</label>
+                            <Controller
+                                name="authPerson.phone"
+                                control={control}
+                                rules={{
+                                    pattern: {
+                                        value: /^[0-9]{10}$/,
+                                        message: 'Invalid mobile number.'
+                                    }
+                                }}
+                                render={({ field, fieldState }) => (
+                                    <InputMask
+                                        id={field.name}
+                                        {...field}
+                                        className={classNames({
+                                            'p-invalid': fieldState.invalid
+                                        })}
+                                        mask="(999) 999-9999"
+                                        unmask
+                                        placeholder="(999) 999-9999"
+                                    />
+                                )}
+                            />
+                            {errors.authPerson?.phone && (
+                                <small className="p-error">
+                                    {errors?.authPerson?.phone?.message}
+                                </small>
+                            )}
+                        </div>
+                        <div className="field">
+                            <label htmlFor="email">Email</label>
+                            <Controller
+                                name="authPerson.email"
+                                control={control}
+                                rules={{
+                                    pattern: {
+                                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                        message:
+                                            'Invalid email address. E.g. example@email.com'
+                                    }
+                                }}
+                                render={({ field, fieldState }) => (
+                                    <InputText
+                                        {...field}
+                                        id={field.name}
+                                        className={classNames({
+                                            'p-invalid': fieldState.invalid
+                                        })}
+                                    />
+                                )}
+                            />
+                            {errors.authPerson?.email && (
+                                <small className="p-error">
+                                    {errors?.authPerson?.email?.message}
+                                </small>
+                            )}
                         </div>
                     </div>
                 </div>

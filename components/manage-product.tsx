@@ -180,7 +180,7 @@ const ProductForm: Page = ({
                         <Controller
                             name="modelNumber"
                             control={control}
-                            rules={{ required: 'Model Number is required.' }}
+                            // rules={{ required: 'Model Number is required.' }}
                             render={({ field, fieldState }) => (
                                 <InputText
                                     id={field.name}

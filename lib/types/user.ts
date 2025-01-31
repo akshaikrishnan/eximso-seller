@@ -18,6 +18,7 @@ export interface Profile {
     segment?: UserSegment;
     gstNo?: string;
     address?: string;
+    postalCode?: string;
     website?: string;
     authPerson?: {
         name?: string;
