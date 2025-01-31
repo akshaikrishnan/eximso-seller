@@ -39,11 +39,17 @@ const AppMenu = () => {
         {
             label: 'Enquiries',
             items: [
+                // {
+                //     label: 'Post Requirements',
+                //     icon: 'pi pi-fw pi-eye',
+                //     to: '/seller/post-requirements',
+                //     badge: 'NEW'
+                // },
                 {
-                    label: 'Post Requirements',
-                    icon: 'pi pi-fw pi-eye',
-                    to: '/seller/post-requirements',
-                    badge: 'NEW'
+                    label: 'Tutorial videos',
+                    icon: 'pi pi-fw pi-video',
+                    url: 'https://youtu.be/6GnmzvqqzJw?si=YC_TKPykjzQM0by8',
+                    target: '_blank'
                 },
                 {
                     label: 'Eximso Buyer',
