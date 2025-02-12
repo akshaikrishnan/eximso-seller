@@ -64,7 +64,9 @@ const LoginPage = () => {
             toast.success(data.data.message);
             if (value === 'Buyer') {
                 router.push(
-                    `${buyerDomain}api/login?token=${data.data.token}&newUser=${data.data.newUser}`
+                    `${buyerDomain}api/login?token=${data.data.token}&newUser=${
+                        data.data.newUser
+                    }&from=${searchParams.get('from') || ''}`
                 );
                 return;
             }
@@ -94,7 +96,9 @@ const LoginPage = () => {
             if (data.data.token) {
                 if (value === 'Buyer') {
                     router.push(
-                        `${buyerDomain}api/login?token=${data.data.token}&newUser=${data.data.newUser}`
+                        `${buyerDomain}api/login?token=${data.data.token}&newUser=${
+                            data.data.newUser
+                        }&from=${searchParams.get('from') || ''}`
                     );
                     return;
                 }
@@ -344,26 +348,26 @@ const LoginPage = () => {
                                     <Divider align="center">
                                         <span className="p-tag">OR</span>
                                     </Divider>
-                                  <div  className="flex justify-content-center w-full">
-                                  <GoogleLogin
-                                        useOneTap
-                                        onSuccess={(credentialResponse) => {
-                                            decodeJWT(
-                                                credentialResponse.credential || ''
-                                            ).then((data: any) => {
-                                                social.mutate({
-                                                    email: data.email,
-                                                    name: data.name,
-                                                    logo: data.picture,
-                                                    socialType: 'google'
+                                    <div className="flex justify-content-center w-full">
+                                        <GoogleLogin
+                                            useOneTap
+                                            onSuccess={(credentialResponse) => {
+                                                decodeJWT(
+                                                    credentialResponse.credential || ''
+                                                ).then((data: any) => {
+                                                    social.mutate({
+                                                        email: data.email,
+                                                        name: data.name,
+                                                        logo: data.picture,
+                                                        socialType: 'google'
+                                                    });
                                                 });
-                                            });
-                                        }}
-                                        onError={() => {
-                                            toast.error('Login Failed');
-                                        }}
-                                    />
-                                  </div>
+                                            }}
+                                            onError={() => {
+                                                toast.error('Login Failed');
+                                            }}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </form>
