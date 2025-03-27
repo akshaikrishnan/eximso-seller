@@ -229,7 +229,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                 rules={{
                                     required: 'Phone is required.',
                                     pattern: {
-                                        value: /^[0-9]{10  }$/,
+                                        value: /^(0\d{6,19}|\+?[1-9]\d{6,19})$/,
                                         message: 'Invalid phone number.'
                                     }
                                 }}
@@ -308,7 +308,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                          rules={{
                          required: 'Postal code is required',
                          pattern: {
-                            value: /^[0-9]{5}(-[0-9]{4})?$/, // Adjust for your country/format
+                            value: /^[A-Za-z0-9\s\-]{3,12}$/, // Adjust for your country/format
                             message: 'Invalid postal code format'
                         }
                     }}
