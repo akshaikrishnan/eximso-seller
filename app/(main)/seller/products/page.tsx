@@ -1,5 +1,5 @@
 'use client';
-
+import { currency } from '@/app/config/constants/currency';
 import React, { useState, useEffect } from 'react';
 import { DataView, DataViewLayoutOptions } from 'primereact/dataview';
 import { Button } from 'primereact/button';
@@ -139,7 +139,7 @@ const ListDemo = () => {
                 options={sortOptions}
                 optionLabel="label"
                 placeholder="Sort By Price"
-                onChange={onSortChange}  
+                onChange={onSortChange}
             />
             <span className="p-input-icon-left">
                 <i className="pi pi-search" />
@@ -164,7 +164,7 @@ const ListDemo = () => {
                             className="my-4 md:my-0 w-9 md:w-10rem shadow-2 mr-5"
                         />
                     </Link>
-                    <div className="flex-1 flex flex-column align-items-center text-center md:text-left"   style={{backgroundColor:"blue"}}>
+                    <div className="flex-1 flex flex-column align-items-center text-center md:text-left" style={{ backgroundColor: "white" }}>
                         <div className="font-bold text-2xl">{data.name}</div>
                         <div className="mb-2">{data?.shortDescription}</div>
                         <Rating
@@ -180,7 +180,7 @@ const ListDemo = () => {
                     </div>
                     <div className="flex flex-row md:flex-column justify-content-between w-full md:w-auto align-items-center md:align-items-end mt-5 md:mt-0">
                         <span className="text-2xl font-semibold mb-2 align-self-center md:align-self-end">
-                            ${data.price}
+                            {currency}{data.price}
                         </span>
                         <div className="flex gap-2">
                             <Link href={`/seller/manage-product/${data._id}`}>
@@ -221,7 +221,7 @@ const ListDemo = () => {
             <div className="col-12 lg:col-4">
                 <div
                     className="card m-3 border-4 surface-border"
-                     style={{ width: '300px', height: '400px', borderRadius: '10px', overflow: 'hidden' }} // Set width and height here
+                    style={{ width: '300px', height: '400px', borderRadius: '10px', overflow: 'hidden' }} // Set width and height here
                 >
                     <div className="flex flex-wrap gap-2 align-items-center justify-content-between mb-2">
                         <div className="flex align-items-center">
@@ -243,39 +243,43 @@ const ListDemo = () => {
                                 src={`${data?.thumbnail}`}
                                 alt={data.name}
                                 className="object-cover w-full mb-4 h-60 sm:h-96 bg-gray-500 dark:bg-gray-500"
-                                style={{ maxHeight: '150px', objectFit: 'cover', borderRadius:"8px" }} // Set max height for the image
+                                style={{ maxHeight: '150px', objectFit: 'cover', borderRadius: "8px" }} // Set max height for the image
                             />
                         </Link>
                         <div className="text-2xl font-bold mb-2">{data.name}</div>
-                        <div className="mb-3 w-full h-12"
-                        style={{width:"100%",height:"50px"}}>{data?.shortDescription}</div>
+                        <div
+                            className="mb-3 w-full h-12 overflow-hidden text-ellipsis"
+                            style={{ width: "100%", height: "52px" }}
+                        >
+                            {data?.shortDescription}
+                        </div>
                         <Rating value={data?.rating || 0} readOnly cancel={false} />
                     </div>
                     <div className="flex align-items-center justify-content-between">
-                        <span className="text-2xl font-semibold">${data.price}</span>
+                        <span className="text-2xl font-semibold">{currency}{data.price}</span>
                         <div className="flex gap-2">
                             <Link href={`/seller/manage-product/${data._id}`}>
                                 {/* <Button icon="pi pi-pencil" severity="warning" /> */}
-                               {/* edit icon */}
+                                {/* edit icon */}
                                 <FaEdit
-                                 style={{
-                                    fontSize: '1.8rem',
-                                    color: '#2196F3',
-                                    cursor: 'pointer',
-                                }} />
+                                    style={{
+                                        fontSize: '1.8rem',
+                                        color: '#2196F3',
+                                        cursor: 'pointer',
+                                    }} />
 
 
                             </Link>
-                          {/* delete icon */}
-                                <MdDelete
+                            {/* delete icon */}
+                            <MdDelete
                                 onClick={() => confirmDeleteProduct(data)}
                                 style={{
                                     fontSize: '1.8rem',
                                     color: '#F44336',
                                     cursor: 'pointer',
-                                }}/>
-                               
-                        
+                                }} />
+
+
                         </div>
                     </div>
                 </div>

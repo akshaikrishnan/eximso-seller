@@ -551,7 +551,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                 name="file"
                                 url={endpoints.singleUpload}
                                 accept="image/*"
-                                maxFileSize={45000}
+                                maxFileSize={5242880}
                                 auto
                                 onUpload={onUpload}
                             />

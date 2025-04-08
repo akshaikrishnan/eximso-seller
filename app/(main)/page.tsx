@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { Demo } from '@/types';
 import { ChartData, ChartOptions } from 'chart.js';
 import Empty from '@/components/empty-state';
+import { currency } from '../config/constants/currency';
 
 const lineData: ChartData = {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
@@ -154,7 +155,7 @@ const Dashboard = () => {
                             <span className="block text-500 font-medium mb-3">
                                 Revenue
                             </span>
-                            <div className="text-900 font-medium text-xl">$0.00</div>
+                            <div className="text-900 font-medium text-xl">{currency}0.00</div>
                         </div>
                         <div
                             className="flex align-items-center justify-content-center bg-orange-100 border-round"

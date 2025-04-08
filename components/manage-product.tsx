@@ -528,7 +528,7 @@ const ProductForm: Page = ({
                                 name="file"
                                 url={endpoints.singleUpload}
                                 accept="image/*"
-                                maxFileSize={45000}
+                                maxFileSize={5242880}
                                 auto
                                 onUpload={onImageUpload}
                             />
@@ -809,7 +809,6 @@ const ProductForm: Page = ({
                             label="Discard"
                             severity="secondary"
                         ></Button>
-
                         <Button
                             loading={mutation.isPending}
                             disabled={!profile?.phone}
