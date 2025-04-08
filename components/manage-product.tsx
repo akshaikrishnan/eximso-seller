@@ -528,7 +528,7 @@ const ProductForm: Page = ({
                                 name="file"
                                 url={endpoints.singleUpload}
                                 accept="image/*"
-                                maxFileSize={45000}
+                                maxFileSize={10000000}
                                 auto
                                 onUpload={onImageUpload}
                             />
@@ -806,12 +806,13 @@ const ProductForm: Page = ({
                             severity="secondary"
                         ></Button>
 
-                        <Button
-                            loading={mutation.isPending}
-                            disabled={!profile.phone}
-                            label={mode === 'update' ? 'Update Product' : 'Add Product'}
-                            icon="pi pi-check"
-                        ></Button>
+<Button
+  loading={mutation.isPending}
+  disabled={!profile?.phone}
+  label={mode === 'update' ? 'Update Product' : 'Add Product'}
+  icon="pi pi-check"
+/>
+
                     </div>
                 </div>
             </form>
