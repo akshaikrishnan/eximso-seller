@@ -528,7 +528,7 @@ const ProductForm: Page = ({
                                 name="file"
                                 url={endpoints.singleUpload}
                                 accept="image/*"
-                                maxFileSize={10000000}
+                                maxFileSize={5242880}
                                 auto
                                 onUpload={onImageUpload}
                             />
