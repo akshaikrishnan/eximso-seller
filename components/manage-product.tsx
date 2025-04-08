@@ -612,6 +612,7 @@ const ProductForm: Page = ({
                                             id={field.name}
                                             ref={field.ref}
                                             min={0}
+                                            minFractionDigits={2}
                                             value={field.value}
                                             onBlur={field.onBlur}
                                             onChange={(e) =>
@@ -643,6 +644,7 @@ const ProductForm: Page = ({
                                             id={field.name}
                                             ref={field.ref}
                                             min={0}
+                                            minFractionDigits={2}
                                             value={field.value}
                                             onBlur={field.onBlur}
                                             onChange={(e) =>
@@ -675,6 +677,7 @@ const ProductForm: Page = ({
                                             ref={field.ref}
                                             min={0}
                                             value={field.value}
+                                            minFractionDigits={2}
                                             onBlur={field.onBlur}
                                             onChange={(e) =>
                                                 field.onChange({
@@ -705,6 +708,7 @@ const ProductForm: Page = ({
                                             id={field.name}
                                             ref={field.ref}
                                             min={0}
+                                            minFractionDigits={2}
                                             value={field.value}
                                             onBlur={field.onBlur}
                                             onChange={(e) =>
@@ -806,13 +810,12 @@ const ProductForm: Page = ({
                             severity="secondary"
                         ></Button>
 
-<Button
-  loading={mutation.isPending}
-  disabled={!profile?.phone}
-  label={mode === 'update' ? 'Update Product' : 'Add Product'}
-  icon="pi pi-check"
-/>
-
+                        <Button
+                            loading={mutation.isPending}
+                            disabled={!profile?.phone}
+                            label={mode === 'update' ? 'Update Product' : 'Add Product'}
+                            icon="pi pi-check"
+                        ></Button>
                     </div>
                 </div>
             </form>
