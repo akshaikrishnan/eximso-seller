@@ -6,6 +6,7 @@ import { cookies } from 'next/headers';
 import KoalaWelcomeEmail from '@/lib/email/welcome-mail';
 import nodemailer from 'nodemailer';
 import { render } from '@react-email/render';
+import axios from 'axios';
 
 export async function POST(req: NextRequest, res: NextResponse) {
     const body = await req.json();
@@ -31,24 +32,24 @@ export async function POST(req: NextRequest, res: NextResponse) {
     );
     cookies().set('access_token', token);
 
-    const transporter = nodemailer.createTransport({
-        service: 'Gmail',
-        auth: {
-            user: process.env.GMAIL_USER,
-            pass: process.env.GMAIL_PASS
-        }
-    });
+    // const transporter = nodemailer.createTransport({
+    //     service: 'Gmail',
+    //     auth: {
+    //         user: process.env.GMAIL_USER,
+    //         pass: process.env.GMAIL_PASS
+    //     }
+    // });
     const url: string =
         userType === 'Buyer'
             ? process.env.NEXT_PUBLIC_BUYER_DOMAIN!
             : req.url || 'https://eximso.com';
 
-    const emailHtml = render(
-        KoalaWelcomeEmail({
-            userFirstname: newUser.email,
-            url
-        })
-    );
+    // const emailHtml = render(
+    //     KoalaWelcomeEmail({
+    //         userFirstname: newUser.email,
+    //         url
+    //     })
+    // );
     // const { data, error } = await resend.emails.send({
     //     from: 'Eximso <onboarding@resend.dev>',
     //     to: [email],
@@ -60,14 +61,45 @@ export async function POST(req: NextRequest, res: NextResponse) {
     //     })
     // });
 
-    const info = await transporter.sendMail({
-        from: 'Eximso <eximsodev@gmail.com>',
+    // const info = await transporter.sendMail({
+    //     from: 'Eximso <eximsodev@gmail.com>',
+    //     to: email,
+    //     bcc: 'vinod@eximso.com',
+    //     subject: 'Welcome to Eximso!',
+    //     html: emailHtml
+    // });
+    // console.log(info);
+
+    const userPayload = {
+        subject: 'welcome',
         to: email,
-        bcc: 'vinod@eximso.com',
-        subject: 'Welcome to Eximso!',
-        html: emailHtml
-    });
-    console.log(info);
+        templateName: 'welcome',
+        props: { name: newUser.name }
+    };
+
+    const notifyPayload = {
+        subject: newUser.name,
+        to: 'vendoronboarding.notification@eximso.com',
+        templateName: 'notify-seller-onboarding',
+        props: {
+            name: newUser.name,
+            email: newUser.email,
+            id: newUser._id
+        }
+    };
+
+    const userEmail = axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/email/send`,
+        userPayload
+    );
+
+    const notifyEmail = axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/email/send`,
+        notifyPayload
+    );
+    const responses = await Promise.all([userEmail, notifyEmail]);
+    console.log('Email sent:', responses);
+
     return NextResponse.json(
         { message: 'User registered successfully', token: token },
         { status: 200 }
