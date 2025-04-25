@@ -6,7 +6,7 @@ export const sendWelcomeEmail = async (newUser: any) => {
             subject: 'welcome',
             to: newUser.email,
             templateName: 'welcome',
-            props: { name: newUser.name }
+            props: { name: newUser.name || newUser.email }
         };
 
         const notifyPayload = {
@@ -14,19 +14,19 @@ export const sendWelcomeEmail = async (newUser: any) => {
             to: 'vendoronboarding.notification@eximso.com',
             templateName: 'notify-seller-onboarding',
             props: {
-                name: newUser.name,
+                name: newUser.name || newUser.email,
                 email: newUser.email,
                 id: newUser._id
             }
         };
 
         const userEmail = axios.post(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/admin/email/send`,
+            `${process.env.NEXT_PUBLIC_API_URL}email/send`,
             userPayload
         );
 
         const notifyEmail = axios.post(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/admin/email/send`,
+            `${process.env.NEXT_PUBLIC_API_URL}email/send`,
             notifyPayload
         );
         const responses = await Promise.all([userEmail, notifyEmail]);
