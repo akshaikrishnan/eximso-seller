@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { NextRequest, NextResponse } from 'next/server';
+import { sendWelcomeEmail } from '@/lib/email/send-mail';
 
 export async function POST(req: NextRequest, res: NextResponse) {
     try {
@@ -34,6 +35,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
             { expiresIn: '7d' }
         );
         cookies().set('access_token', token);
+        await sendWelcomeEmail(newUser);
         return NextResponse.json({
             message: `Welcome ${newUser.name || newUser.email}!`,
             user: newUser,

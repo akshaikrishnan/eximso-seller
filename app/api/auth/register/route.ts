@@ -3,10 +3,7 @@ import jwt from 'jsonwebtoken';
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
 import { cookies } from 'next/headers';
-import KoalaWelcomeEmail from '@/lib/email/welcome-mail';
-import nodemailer from 'nodemailer';
-import { render } from '@react-email/render';
-import axios from 'axios';
+import { sendWelcomeEmail } from '@/lib/email/send-mail';
 
 export async function POST(req: NextRequest, res: NextResponse) {
     const body = await req.json();
@@ -69,37 +66,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
     //     html: emailHtml
     // });
     // console.log(info);
-
-    const userPayload = {
-        subject: 'welcome',
-        to: email,
-        templateName: 'welcome',
-        props: { name: newUser.name }
-    };
-
-    const notifyPayload = {
-        subject: newUser.name,
-        to: 'vendoronboarding.notification@eximso.com',
-        templateName: 'notify-seller-onboarding',
-        props: {
-            name: newUser.name,
-            email: newUser.email,
-            id: newUser._id
-        }
-    };
-
-    const userEmail = axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/email/send`,
-        userPayload
-    );
-
-    const notifyEmail = axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/email/send`,
-        notifyPayload
-    );
-    const responses = await Promise.all([userEmail, notifyEmail]);
-    console.log('Email sent:', responses);
-
+    await sendWelcomeEmail(newUser);
     return NextResponse.json(
         { message: 'User registered successfully', token: token },
         { status: 200 }
