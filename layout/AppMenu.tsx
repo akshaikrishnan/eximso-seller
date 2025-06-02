@@ -82,7 +82,7 @@ const AppMenu = () => {
                     );
                 })}
 
-                <Link
+                {/* <Link
                     href="https://blocks.primereact.org"
                     target="_blank"
                     style={{ cursor: 'pointer' }}
@@ -94,7 +94,7 @@ const AppMenu = () => {
                             layoutConfig.colorScheme === 'light' ? '' : '-dark'
                         }.jpeg`}
                     />
-                </Link>
+                </Link> */}
             </ul>
         </MenuProvider>
     );

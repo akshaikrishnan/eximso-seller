@@ -5,6 +5,8 @@ export const endpoints = {
     register: '/api/auth/register',
     socialLogin: '/api/auth/social-login',
     forgotPassword: '/api/auth/forgot-password',
+    push: '/api/push/subscribe',
+  
 
     //user
     user: '/api/user',
