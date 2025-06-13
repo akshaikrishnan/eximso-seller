@@ -48,7 +48,7 @@ const AppMenu = () => {
                 {
                     label: 'Tutorial videos',
                     icon: 'pi pi-fw pi-video',
-                    url: 'https://youtu.be/6GnmzvqqzJw?si=YC_TKPykjzQM0by8',
+                    url: 'https://www.youtube.com/@eximsotradepartner',
                     target: '_blank'
                 },
                 {
