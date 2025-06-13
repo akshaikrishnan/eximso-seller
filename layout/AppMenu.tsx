@@ -48,7 +48,7 @@ const AppMenu = () => {
                 {
                     label: 'Tutorial videos',
                     icon: 'pi pi-fw pi-video',
-                    url: 'https://www.youtube.com/@eximsotradepartner',
+                    url: 'https://youtu.be/6GnmzvqqzJw?si=YC_TKPykjzQM0by8',
                     target: '_blank'
                 },
                 {
@@ -82,7 +82,7 @@ const AppMenu = () => {
                     );
                 })}
 
-                <Link
+                {/* <Link
                     href="https://blocks.primereact.org"
                     target="_blank"
                     style={{ cursor: 'pointer' }}
@@ -94,7 +94,7 @@ const AppMenu = () => {
                             layoutConfig.colorScheme === 'light' ? '' : '-dark'
                         }.jpeg`}
                     />
-                </Link>
+                </Link> */}
             </ul>
         </MenuProvider>
     );
