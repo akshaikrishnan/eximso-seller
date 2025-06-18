@@ -177,7 +177,7 @@ const Layout = ({ children }: ChildContainerProps) => {
         const unsubscribe = onMessage(messaging, (payload) => {
           const title = payload?.notification?.title || 'Notification';
           const body = payload?.notification?.body || 'You have a new notification!';
-          const link = payload?.data?.link || payload?.fcmOptions?.link;
+          const link = payload?.data?.link || payload?.fcmOptions?.link;  
 
           toastRef.current?.show({
             severity: 'info',
