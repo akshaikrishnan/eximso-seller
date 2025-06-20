@@ -59,8 +59,8 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                     src={`/layout/images/logo-${
                         layoutConfig.colorScheme !== 'light' ? 'white' : 'dark'
                     }.png`}
-                    width="50px"
-                    height={'25px'}
+                    width="40px"
+                    height={'20px'}
                     alt="logo"
                 />
                 {/* <span>SAKAI</span> */}

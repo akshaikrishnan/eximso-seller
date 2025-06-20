@@ -69,9 +69,9 @@ const EximsoDocumentation = () => {
                             For support or inquiries, reach out to us at:
                             <ul>
                                 <li>
-                                    Email: <b>help@eximso.com</b>
+                                    Email: <b>trade.partner@eximso.com</b>
                                 </li>
-                                <li>Phone: [Insert Phone Number]</li>
+                                <li>Phone:+919645759929</li>
                                 <li>
                                     Website:{' '}
                                     <a
