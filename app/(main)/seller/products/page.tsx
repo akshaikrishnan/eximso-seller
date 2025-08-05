@@ -153,139 +153,146 @@ const ListDemo = () => {
         </div>
     );
 
-    const dataviewListItem = (data: Product) => {
-        return (
-            <div className="col-12">
-                <div className="flex flex-column md:flex-row align-items-center p-3 w-full">
-                    <Link href={`/seller/manage-product/${data._id}`}>
-                        <img
-                            src={`${data.thumbnail}`}
-                            alt={data.name}
-                            className="my-4 md:my-0 w-9 md:w-10rem shadow-2 mr-5"
-                        />
-                    </Link>
-                    <div className="flex-1 flex flex-column align-items-center text-center md:text-left" style={{ backgroundColor: "white" }}>
-                        <div className="font-bold text-2xl">{data.name}</div>
-                        <div className="mb-2">{data?.shortDescription}</div>
-                        <Rating
-                            value={data?.rating || 0}
-                            readOnly
-                            cancel={false}
-                            className="mb-2"
-                        ></Rating>
-                        <div className="flex align-items-center">
-                            <i className="pi pi-tag mr-2"></i>
-                            <span className="font-semibold">{data?.category?.name}</span>
-                        </div>
+const PriceDisplay = ({ data }: { data: Product }) => {
+    return (
+        <span className="text-2xl font-semibold mb-2 align-self-center md:align-self-end">
+            {data.offerPrice && data.offerPrice > 0 ? `${currency}${data.offerPrice}` : `${currency}${data.price}`}
+        </span>
+    );
+};
+
+const dataviewListItem = (data: Product) => {
+    return (
+        <div className="col-12">
+            <div className="flex flex-column md:flex-row align-items-center p-3 w-full">
+                <Link href={`/seller/manage-product/${data._id}`}>
+                    <img
+                        src={`${data.thumbnail}`}
+                        alt={data.name}
+                        className="my-4 md:my-0 w-9 md:w-10rem shadow-2 mr-5"
+                    />
+                </Link>
+                <div className="flex-1 flex flex-column align-items-center text-center md:text-left" style={{ backgroundColor: "white" }}>
+                    <div className="font-bold text-2xl">{data.name}</div>
+                    <div className="mb-2">{data?.shortDescription}</div>
+                    <Rating
+                        value={data?.rating || 0}
+                        readOnly
+                        cancel={false}
+                        className="mb-2"
+                    ></Rating>
+                    <div className="flex align-items-center">
+                        <i className="pi pi-tag mr-2"></i>
+                        <span className="font-semibold">{data?.category?.name}</span>
                     </div>
-                    <div className="flex flex-row md:flex-column justify-content-between w-full md:w-auto align-items-center md:align-items-end mt-5 md:mt-0">
-                        <span className="text-2xl font-semibold mb-2 align-self-center md:align-self-end">
-                            {currency}{data.price}
-                        </span>
-                        <div className="flex gap-2">
-                            <Link href={`/seller/manage-product/${data._id}`}>
-                                <Button
-                                    label="Edit"
-                                    icon="pi pi-pencil"
-                                    severity="warning"
-                                    size="small"
-                                    className="mb-2"
-                                />
-                            </Link>
+                </div>
+                <div className="flex flex-row md:flex-column justify-content-between w-full md:w-auto align-items-center md:align-items-end mt-5 md:mt-0">
+                    <PriceDisplay data={data} />
+                    <div className="flex gap-2">
+                        <Link href={`/seller/manage-product/${data._id}`}>
                             <Button
-                                label="Delete"
-                                icon="pi pi-trash"
-                                severity="danger"
-                                onClick={() => confirmDeleteProduct(data)}
+                                label="Edit"
+                                icon="pi pi-pencil"
+                                severity="warning"
                                 size="small"
                                 className="mb-2"
                             />
-                        </div>
-
-                        <span
-                            className={`product-badge status-${getStockStatus(
-                                data?.stock,
-                                data?.minimumOrderQuantity
-                            )}`}
-                        >
-                            {getStockStatus(data?.stock, data?.minimumOrderQuantity)}
-                        </span>
+                        </Link>
+                        <Button
+                            label="Delete"
+                            icon="pi pi-trash"
+                            severity="danger"
+                            onClick={() => confirmDeleteProduct(data)}
+                            size="small"
+                            className="mb-2"
+                        />
                     </div>
+
+                    <span
+                        className={`product-badge status-${getStockStatus(
+                            data?.stock,
+                            data?.minimumOrderQuantity
+                        )}`}
+                    >
+                        {getStockStatus(data?.stock, data?.minimumOrderQuantity)}
+                    </span>
                 </div>
             </div>
-        );
-    };
+        </div>
+    );
+};
 
-    const dataviewGridItem = (data: Product) => {
-        return (
-            <div className="col-12 lg:col-4">
-                <div
-                    className="card m-3 border-4 surface-border"
-                    style={{ width: '300px', height: '400px', borderRadius: '10px', overflow: 'hidden' }} // Set width and height here
-                >
-                    <div className="flex flex-wrap gap-2 align-items-center justify-content-between mb-2">
-                        <div className="flex align-items-center">
-                            <i className="pi pi-tag mr-2" />
-                            <span className="font-semibold">{data?.category?.name}</span>
-                        </div>
-                        <span
-                            className={`product-badge status-${getStockStatus(
-                                data?.stock,
-                                data?.minimumOrderQuantity
-                            )}`}
-                        >
-                            {getStockStatus(data?.stock, data?.minimumOrderQuantity)}
-                        </span>
+const dataviewGridItem = (data: Product) => {
+    return (
+        <div className="col-12 lg:col-4">
+            <div
+                className="card m-3 border-4 surface-border"
+                style={{ width: '300px', height: '400px', borderRadius: '10px', overflow: 'hidden' }} // Set width and height here
+            >
+                <div className="flex flex-wrap gap-2 align-items-center justify-content-between mb-2">
+                    <div className="flex align-items-center">
+                        <i className="pi pi-tag mr-2" />
+                        <span className="font-semibold">{data?.category?.name}</span>
                     </div>
-                    <div className="flex flex-column align-items-center text-center mb-3">
+                    <span
+                        className={`product-badge status-${getStockStatus(
+                            data?.stock,
+                            data?.minimumOrderQuantity
+                        )}`}
+                    >
+                        {getStockStatus(data?.stock, data?.minimumOrderQuantity)}
+                    </span>
+                </div>
+                <div className="flex flex-column align-items-center text-center mb-3">
+                    <Link href={`/seller/manage-product/${data._id}`}>
+                        <img
+                            src={`${data?.thumbnail}`}
+                            alt={data.name}
+                            className="object-cover w-full mb-4 h-60 sm:h-96 bg-gray-500 dark:bg-gray-500"
+                            style={{ maxHeight: '150px', objectFit: 'cover', borderRadius: "8px" }} // Set max height for the image
+                        />
+                    </Link>
+                    <div className="text-2xl font-bold mb-2">{data.name}</div>
+                    <div
+                        className="mb-3 w-full h-12 overflow-hidden text-ellipsis"
+                        style={{ width: "100%", height: "52px" }}
+                    >
+                        {data?.shortDescription}
+                    </div>
+                    <Rating value={data?.rating || 0} readOnly cancel={false} />
+                </div>
+                <div className="flex align-items-center justify-content-between">
+                    <PriceDisplay data={data} />
+
+                    <div className="flex gap-2">
                         <Link href={`/seller/manage-product/${data._id}`}>
-                            <img
-                                src={`${data?.thumbnail}`}
-                                alt={data.name}
-                                className="object-cover w-full mb-4 h-60 sm:h-96 bg-gray-500 dark:bg-gray-500"
-                                style={{ maxHeight: '150px', objectFit: 'cover', borderRadius: "8px" }} // Set max height for the image
-                            />
-                        </Link>
-                        <div className="text-2xl font-bold mb-2">{data.name}</div>
-                        <div
-                            className="mb-3 w-full h-12 overflow-hidden text-ellipsis"
-                            style={{ width: "100%", height: "52px" }}
-                        >
-                            {data?.shortDescription}
-                        </div>
-                        <Rating value={data?.rating || 0} readOnly cancel={false} />
-                    </div>
-                    <div className="flex align-items-center justify-content-between">
-                        <span className="text-2xl font-semibold">{currency}{data.price}</span>
-                        <div className="flex gap-2">
-                            <Link href={`/seller/manage-product/${data._id}`}>
-                                {/* <Button icon="pi pi-pencil" severity="warning" /> */}
-                                {/* edit icon */}
-                                <FaEdit
-                                    style={{
-                                        fontSize: '1.8rem',
-                                        color: '#2196F3',
-                                        cursor: 'pointer',
-                                    }} />
-
-
-                            </Link>
-                            {/* delete icon */}
-                            <MdDelete
-                                onClick={() => confirmDeleteProduct(data)}
+                            {/* <Button icon="pi pi-pencil" severity="warning" /> */}
+                            {/* edit icon */}
+                            <FaEdit
                                 style={{
                                     fontSize: '1.8rem',
-                                    color: '#F44336',
+                                    color: '#2196F3',
                                     cursor: 'pointer',
                                 }} />
 
 
-                        </div>
+                        </Link>
+                        {/* delete icon */}
+                        <MdDelete
+                            onClick={() => confirmDeleteProduct(data)}
+                            style={{
+                                fontSize: '1.8rem',
+                                color: '#F44336',
+                                cursor: 'pointer',
+                            }} />
+
+
                     </div>
                 </div>
             </div>
-        );
-    };
+        </div>
+    );
+};
 
     const itemTemplate = (
         data: Product,
