@@ -4,7 +4,7 @@ import React, { useContext } from 'react';
 import AppMenuitem from './AppMenuitem';
 import { LayoutContext } from './context/layoutcontext';
 import { MenuProvider } from './context/menucontext';
-import Link from 'next/link';
+import Link from 'next/link';   
 import { AppMenuItem } from '@/types';
 
 const AppMenu = () => {
@@ -14,8 +14,8 @@ const AppMenu = () => {
         {
             label: 'Home',
             items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' }]
-        },
-        {
+        },  
+        {   
             label: 'Catalogue',
             items: [
                 { label: 'Profile', icon: 'pi pi-fw pi-id-card', to: '/seller/profile' },
@@ -48,7 +48,7 @@ const AppMenu = () => {
                 {
                     label: 'Tutorial videos',
                     icon: 'pi pi-fw pi-video',
-                    url: 'https://youtu.be/6GnmzvqqzJw?si=YC_TKPykjzQM0by8',
+                    url: 'https://youtu.be/C4kzf8vG10c?si=y974MMWc7Z0IkzwB',
                     target: '_blank'
                 },
                 {
@@ -93,11 +93,11 @@ const AppMenu = () => {
                         src={`/layout/images/banner${
                             layoutConfig.colorScheme === 'light' ? '' : '-dark'
                         }.jpeg`}
-                    />
+                    />  
                 </Link> */}
             </ul>
         </MenuProvider>
-    );
+    );      
 };
 
 export default AppMenu;
