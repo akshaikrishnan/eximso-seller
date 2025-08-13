@@ -4,6 +4,7 @@ import React, { useContext } from 'react';
 import { LayoutContext } from './context/layoutcontext';
 import Link from 'next/link';
 
+
 const AppFooter = ({ isSeller }: { isSeller?: boolean }) => {
     const { layoutConfig } = useContext(LayoutContext);
 

@@ -137,7 +137,7 @@ const ProductForm: Page = ({
 
     return (
         <>
-            {!profile?.phone && (
+            {/* {!profile?.phone && (
                 <Link href="/seller/profile">
                     <Message
                         severity="warn"
@@ -145,7 +145,7 @@ const ProductForm: Page = ({
                         text="Please add your phone number in your profile settings to continue adding products."
                     />
                 </Link>
-            )}
+            )} */}
 
             <form className="grid input-demo" onSubmit={handleSubmit(onSubmit)}>
                 <div className="col-12  p-fluid md:col-6">
@@ -153,7 +153,7 @@ const ProductForm: Page = ({
                         <h5>Manage Product</h5>
                         <div className="grid formgrid">
                             <div className="field col-12 mb-2  lg:mb-0">
-                                <h6>Name</h6>
+                                <h6>Product Name</h6>
                                 <Controller
                                     name="name"
                                     control={control}
@@ -608,6 +608,7 @@ const ProductForm: Page = ({
                                     rules={{ required: 'Length is required.' }}
                                     render={({ field, fieldState }) => (
                                         <InputNumber
+                                            placeholder='(Enter length in cm)'
                                             suffix="cm"
                                             id={field.name}
                                             ref={field.ref}
@@ -640,6 +641,7 @@ const ProductForm: Page = ({
                                     rules={{ required: 'Width is required.' }}
                                     render={({ field, fieldState }) => (
                                         <InputNumber
+                                            placeholder='(Enter width in cm)'
                                             suffix="cm"
                                             id={field.name}
                                             ref={field.ref}
@@ -672,6 +674,7 @@ const ProductForm: Page = ({
                                     rules={{ required: 'Height is required.' }}
                                     render={({ field, fieldState }) => (
                                         <InputNumber
+                                            placeholder='(Enter height in cm)'
                                             suffix="cm"
                                             id={field.name}
                                             ref={field.ref}
@@ -704,6 +707,7 @@ const ProductForm: Page = ({
                                     rules={{ required: 'Weight is required.' }}
                                     render={({ field, fieldState }) => (
                                         <InputNumber
+                                            placeholder='(Minimum 1 kg)'
                                             suffix="kg"
                                             id={field.name}
                                             ref={field.ref}
@@ -739,6 +743,7 @@ const ProductForm: Page = ({
                             rules={{ required: 'UOM is required.' }}
                             render={({ field, fieldState }) => (
                                 <InputText
+                                    placeholder="(Ex:- cm, kg, ml etc.)"
                                     id={field.name}
                                     {...field}
                                     className={classNames({
