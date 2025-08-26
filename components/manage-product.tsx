@@ -254,7 +254,7 @@ const ProductForm: Page = ({
                                         validate: (value) =>
                                             value
                                                 ? value < priceWatch ||
-                                                  'Offer price should be less than original price'
+                                                'Offer price should be less than original price'
                                                 : true
                                     }}
                                     render={({ field, fieldState }) => (
@@ -544,26 +544,39 @@ const ProductForm: Page = ({
                             maxFileSize={10000000}
                             onUpload={onImagesUpload}
                             emptyTemplate={
-                                <p className="m-0 py-5">
-                                    Drag and drop files to here to upload.
-                                </p>
+                                <p className="m-0 py-5">Drag and drop files to here to upload.</p>
                             }
                         />
+
                         <h6>Uploaded Images</h6>
-                        <div className="grid pt-2">
-                            {watch('images') &&
-                                watch('images').map((item, i) => (
-                                    <div key={i} className="col-6 md:col-4 mb-2">
+                        <div className="grid pt-4 gap-4">
+                            {watch("images") &&
+                                watch("images").map((item, i) => (
+                                    <div
+                                        key={i}
+                                        className="col-6 md:col-4 mb-2 relative"
+                                    >
                                         <img
                                             src={item}
-                                            alt="image"
-                                            style={{ objectFit: 'contain' }}
-                                            className="w-full shadow-2"
+                                            alt="image" 
+                                            style={{ objectFit: "contain" }}
+                                            className="w-full shadow-2 rounded"
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const updated = watch("images").filter((_, index) => index !== i);
+                                                setValue("images", updated); 
+                                            }}
+                                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs"
+                                        >
+                                            ✕
+                                        </button>
                                     </div>
                                 ))}
                         </div>
                     </div>
+
 
                     <div className="card">
                         <h5>Product Videos</h5>

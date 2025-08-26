@@ -227,7 +227,7 @@ const dataviewGridItem = (data: Product) => {
         <div className="col-12 lg:col-4">
             <div
                 className="card m-3 border-4 surface-border"
-                style={{ width: '300px', height: '400px', borderRadius: '10px', overflow: 'hidden' }} // Set width and height here
+                style={{ width: '300px', height: '440px', borderRadius: '10px', overflow: 'hidden' }} // Set width and height here
             >
                 <div className="flex flex-wrap gap-2 align-items-center justify-content-between mb-2">
                     <div className="flex align-items-center">
