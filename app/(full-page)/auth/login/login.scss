@@ -5,6 +5,31 @@
     }
 }
 
+.PhoneInputInput {
+    font-family: var(--font-family);
+    font-feature-settings: var(--font-feature-settings, normal);
+    font-size: 1rem;
+    color: #4b5563;
+    background: #ffffff;
+    padding: 0.75rem 0.75rem;
+    border: 1px solid #d1d5db;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+    appearance: none;
+    border-radius: 6px;
+    &:hover {
+        border-color: #8b5cf6;
+    }
+    &:focus {
+        outline: 0 none;
+        outline-offset: 0;
+        box-shadow: 0 0 0 0.2rem #ddd6fe;
+        border-color: #8b5cf6;
+    }
+    @media screen and (min-width: 768px) {
+        width: 30rem !important;
+    }
+}
+
 .surface-card {
     @media (max-width: 768px) {
         min-width: 90vw;

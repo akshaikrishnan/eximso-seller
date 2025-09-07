@@ -22,10 +22,17 @@ import { decodeJWT } from '@/lib/utils/getDataFromToken';
 import { Dialog } from 'primereact/dialog';
 import Link from 'next/link';
 import AppFooter from '@/layout/AppFooter';
+import PhoneInputWithCountry from 'react-phone-number-input/react-hook-form';
+import PhoneInput, {
+    isPossiblePhoneNumber,
+    isValidPhoneNumber
+} from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 type LoginInputs = {
     email: string;
     password?: string;
+    phone?: string;
 };
 
 const LoginPage = () => {
@@ -38,7 +45,9 @@ const LoginPage = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const userType = searchParams.get('userType');
+    const authType = searchParams.get('authType');
     const [value, setValue] = useState(userType || options[0]);
+    const [authTypeValue, setAuthTypeValue] = useState(authType || 'phone');
     const formRef = useRef<HTMLFormElement>(null);
     const redirectUser = (token: string) => {
         if (isNewUser) router.push(`/onboarding`);
@@ -49,8 +58,16 @@ const LoginPage = () => {
         control,
         handleSubmit,
         watch,
-        formState: { errors }
+        formState: { errors },
+        setError
     } = useForm<LoginInputs>();
+
+    const phone = watch('phone');
+    const phoneError = phone
+        ? isValidPhoneNumber(phone)
+            ? undefined
+            : 'Invalid phone number'
+        : 'Phone number required';
 
     const social = useMutation({
         mutationFn: (data: any) => {
@@ -111,6 +128,11 @@ const LoginPage = () => {
     });
 
     const onSubmit: SubmitHandler<LoginInputs> = (data: LoginInputs) => {
+        if (authTypeValue === 'phone' && phoneError) {
+            setError('phone', { message: phoneError });
+            toast.error(phoneError);
+            return;
+        }
         mutation.mutate(data);
     };
 
@@ -216,46 +238,111 @@ const LoginPage = () => {
                                 />
                             </div>
                             <div>
-                                <div className="flex flex-column gap-2 mb-3">
-                                    <label
-                                        htmlFor="email1"
-                                        className="block text-900 text-xl font-medium "
-                                    >
-                                        Email
-                                    </label>
-                                    <Controller
-                                        name="email"
-                                        control={control}
-                                        rules={{
-                                            required: 'Email is required.',
-                                            pattern: {
-                                                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                                message:
-                                                    'Invalid email address. E.g. example@email.com'
-                                            }
-                                        }}
-                                        render={({ field, fieldState }) => (
-                                            <InputText
-                                                id={field.name}
-                                                {...field}
-                                                autoFocus
-                                                style={{ padding: '1rem' }}
-                                                className={classNames(
-                                                    'w-full md:w-30rem',
-                                                    {
-                                                        'p-invalid': fieldState.invalid
-                                                    }
-                                                )}
-                                                readOnly={userChecked}
-                                            />
+                                {authTypeValue === 'email' && (
+                                    <div className="flex flex-column gap-2 mb-3">
+                                        <label
+                                            htmlFor="email1"
+                                            className="block text-900 text-xl font-medium "
+                                        >
+                                            Email
+                                        </label>
+                                        <Controller
+                                            name="email"
+                                            control={control}
+                                            rules={{
+                                                required: 'Email is required.',
+                                                pattern: {
+                                                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                                    message:
+                                                        'Invalid email address. E.g. example@email.com'
+                                                }
+                                            }}
+                                            render={({ field, fieldState }) => (
+                                                <InputText
+                                                    id={field.name}
+                                                    {...field}
+                                                    autoFocus
+                                                    style={{ padding: '1rem' }}
+                                                    className={classNames(
+                                                        'w-full md:w-30rem',
+                                                        {
+                                                            'p-invalid':
+                                                                fieldState.invalid
+                                                        }
+                                                    )}
+                                                    readOnly={userChecked}
+                                                />
+                                            )}
+                                        />
+                                        {errors.email && (
+                                            <small className="p-error">
+                                                {errors?.email?.message}
+                                            </small>
                                         )}
-                                    />
-                                    {errors.email && (
-                                        <small className="p-error">
-                                            {errors?.email?.message}
-                                        </small>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
+                                {authTypeValue === 'phone' && (
+                                    <div className="flex flex-column gap-2 mb-3">
+                                        <label
+                                            htmlFor="email1"
+                                            className="block text-900 text-xl font-medium "
+                                        >
+                                            Phone
+                                        </label>
+                                        <Controller
+                                            name="phone"
+                                            control={control}
+                                            rules={{
+                                                required: 'Phone is required.'
+                                            }}
+                                            render={({ field, fieldState }) => (
+                                                <PhoneInputWithCountry
+                                                    control={control}
+                                                    rules={{
+                                                        required: 'Phone is Required'
+                                                    }}
+                                                    defaultCountry="IN"
+                                                    readOnly={userChecked}
+                                                    {...field}
+                                                    numberInputProps={{
+                                                        className: classNames('', {
+                                                            'p-invalid':
+                                                                fieldState.invalid
+                                                        }),
+                                                        autoFocus: true
+                                                    }}
+                                                    className={classNames('w-full mb-5', {
+                                                        'p-invalid': fieldState.invalid
+                                                    })}
+                                                />
+                                            )}
+                                        />
+
+                                        {errors.phone && (
+                                            <small className="p-error">
+                                                {errors?.phone?.message}
+                                            </small>
+                                        )}
+                                    </div>
+                                )}
+                                {!userChecked && (
+                                    <a
+                                        onClick={() => {
+                                            setAuthTypeValue(
+                                                authTypeValue === 'email'
+                                                    ? 'phone'
+                                                    : 'email'
+                                            );
+                                            setUserChecked(false);
+                                            setIsNewUser(true);
+                                        }}
+                                        className="flex justify-content-center w-full mt-3 blue-text cursor-pointer"
+                                    >
+                                        Use{' '}
+                                        {authTypeValue === 'email' ? 'Phone' : 'Email'}{' '}
+                                        Instead
+                                    </a>
+                                )}
                                 {/* <InputText id="email1" type="text" placeholder="Email address" style={{ padding: '1rem' }}  className="w-full md:w-30rem mb-5" /> */}
                                 {userChecked && (
                                     <>
