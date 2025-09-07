@@ -35,26 +35,18 @@ export async function GET(req: NextRequest, res: NextResponse) {
 export async function POST(req: NextRequest, res: NextResponse) {
     await connectDB();
 
-    const { email, password } = await req.json();
-    if (!email || !password) {
-        return NextResponse.json(
-            { message: 'Invalid email or password' },
-            { status: 401 }
-        );
+    const { email, password, phone } = await req.json();
+    if ((!email && !phone) || !password) {
+        return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
     }
-    const user = await findOne({ email: email });
+    const body = email ? { email: email } : { phone: phone };
+    const user = await findOne(body);
     if (!user) {
-        return NextResponse.json(
-            { message: 'Invalid email or password' },
-            { status: 401 }
-        );
+        return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
     }
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-        return NextResponse.json(
-            { message: 'Invalid email or password' },
-            { status: 401 }
-        );
+        return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
     }
     const token = jwt.sign(
         { id: user._id.toString(), email: email },

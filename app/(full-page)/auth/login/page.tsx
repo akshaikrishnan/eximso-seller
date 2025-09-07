@@ -47,7 +47,7 @@ const LoginPage = () => {
     const userType = searchParams.get('userType');
     const authType = searchParams.get('authType');
     const [value, setValue] = useState(userType || options[0]);
-    const [authTypeValue, setAuthTypeValue] = useState(authType || 'phone');
+    const [authTypeValue, setAuthTypeValue] = useState(authType || 'email');
     const formRef = useRef<HTMLFormElement>(null);
     const redirectUser = (token: string) => {
         if (isNewUser) router.push(`/onboarding`);
@@ -325,7 +325,7 @@ const LoginPage = () => {
                                         )}
                                     </div>
                                 )}
-                                {!userChecked && (
+                                {!userChecked && false && (
                                     <a
                                         onClick={() => {
                                             setAuthTypeValue(
