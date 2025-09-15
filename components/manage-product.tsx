@@ -20,7 +20,7 @@ import { InputTextarea } from 'primereact/inputtextarea';
 
 import { ToggleButton } from 'primereact/togglebutton';
 import { classNames } from 'primereact/utils';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import axios from 'axios';
 import { toast } from 'sonner';
@@ -34,6 +34,9 @@ import 'react-quill/dist/quill.snow.css';
 import { endpoints } from '@/lib/constants/endpoints';
 import Link from 'next/link';
 import { Message } from 'primereact/message';
+import { useChat } from '@ai-sdk/react';
+import { FaMagic } from 'react-icons/fa';
+import { stripFences, splitSections, parseKeywords } from '@/lib/utils/ai';
 
 const ProductForm: Page = ({
     mode,
@@ -46,6 +49,15 @@ const ProductForm: Page = ({
     const [percentage, setPercentage] = useState(0);
     const queryClient = useQueryClient();
     const router = useRouter();
+    const { messages, sendMessage } = useChat();
+
+    const [aiPending, setAiPending] = useState(false);
+    const [hasGenerated, setHasGenerated] = useState(false);
+
+    // track the last seen assistant message id and length, to detect growth
+    const lastAssistantIdRef = useRef<string | null>(null);
+    const lastLenRef = useRef<number>(0);
+    const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         CategoryService.getUserCategories().then((data) => setAutoValue(data));
@@ -135,6 +147,75 @@ const ProductForm: Page = ({
         }
     });
 
+    useEffect(() => {
+        if (!aiPending) return;
+
+        // get the latest assistant message (AI SDK grows one message as it streams)
+        const assistant = [...messages].reverse().find((m) => m.role === 'assistant');
+        if (!assistant) return;
+
+        const raw = (assistant.parts ?? [])
+            .map((p: any) => (p?.type === 'text' ? p.text : ''))
+            .join('');
+
+        const cleaned = stripFences(raw);
+        const { html, kw } = splitSections(cleaned);
+
+        // STREAM: update description when html grows
+        if (html && html.length > lastLenRef.current) {
+            lastLenRef.current = html.length;
+            setValue('detailedDescription', html, { shouldDirty: true });
+        }
+
+        // (re)arm settle timer — if no growth for 900ms, we consider it done
+        if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+        settleTimerRef.current = setTimeout(() => {
+            // final parse at settle time (safer)
+            const finalRaw = (assistant.parts ?? [])
+                .map((p: any) => (p?.type === 'text' ? p.text : ''))
+                .join('');
+            const finalClean = stripFences(finalRaw);
+            const { html: finalHtml, kw: finalKw } = splitSections(finalClean);
+
+            if (finalHtml) {
+                setValue('detailedDescription', finalHtml, { shouldDirty: true });
+            }
+
+            const tags = parseKeywords(finalKw);
+            if (tags.length) {
+                setValue('tags', tags, { shouldDirty: true });
+            }
+
+            setAiPending(false);
+            setHasGenerated(true);
+            toast.success('AI description & keywords added. Review before saving.');
+        }, 900);
+    }, [messages, aiPending, setValue]);
+
+    const prompt = `
+You are writing a detailed, professional product description for a B2B/B2C marketplace rich text editor.
+
+Product name: "${watch('name') || ''}"
+Short description: "${watch('shortDescription') || ''}"
+Highlight a few key benefits with <strong> for important phrases and <em> for subtle emphasis. Keep it professional.
+Write two sections, exactly in this order and format, with no markdown, no code fences, and no extra headers:
+
+---HTML---
+(Write clean, structured HTML only. Do not include <html>, <head>, or <body>.
+Length: 350-500 words, comprehensive but concise.
+Structure:
+- Intro paragraph: 3-4 sentences, highlighting the product name and its core value.
+- Features: use <ul><li> with 6-10 well-written, benefit-oriented bullet points.
+- Specifications / details: another <ul><li> list with clear technical or functional attributes.
+- Applications / usage: 2-3 paragraphs describing how and where the product can be used.
+- Closing: a short summary paragraph emphasizing reliability, quality, or value.
+Avoid hype words like "best in the world", avoid pricing/shipping/warranty info, avoid external links.)
+---KEYWORDS---
+(Provide 12-20 simple, lowercase, comma-separated keywords or phrases. 
+Base them on product name, category, and description. 
+Prefer short 1-3 word phrases. No duplicates, no punctuation except commas.)
+`.trim();
+
     return (
         <>
             {/* {!profile?.phone && (
@@ -192,14 +273,12 @@ const ProductForm: Page = ({
                                 />
                             )}
                         />
-
                         {errors.modelNumber && (
                             <small className="p-error">
                                 {errors?.modelNumber?.message}
                             </small>
                         )}
                         <h6>Status</h6>
-
                         <ToggleButton
                             checked={watch('isActive')}
                             onChange={(e) =>
@@ -208,7 +287,6 @@ const ProductForm: Page = ({
                             onLabel="Product Active"
                             offLabel="Product Offline"
                         />
-
                         <h6>Price</h6>
                         <div className="grid formgrid">
                             <div className="col-12 mb-2 lg:col-5 lg:mb-0">
@@ -254,7 +332,7 @@ const ProductForm: Page = ({
                                         validate: (value) =>
                                             value
                                                 ? value < priceWatch ||
-                                                'Offer price should be less than original price'
+                                                  'Offer price should be less than original price'
                                                 : true
                                     }}
                                     render={({ field, fieldState }) => (
@@ -331,7 +409,6 @@ const ProductForm: Page = ({
                                     : ''}
                             </small>
                         )}
-
                         <h6>Sub-Category</h6>
                         <Controller
                             name="subcategory"
@@ -369,7 +446,6 @@ const ProductForm: Page = ({
                                     : ''}
                             </small>
                         )}
-
                         <h6>Manufactured by / Brand</h6>
                         <Controller
                             name="brand"
@@ -388,7 +464,6 @@ const ProductForm: Page = ({
                         {errors.brand && (
                             <small className="p-error">{errors?.brand?.message}</small>
                         )}
-
                         <h6>Country of Origin</h6>
                         <Controller
                             name="countryOfOrigin"
@@ -412,7 +487,6 @@ const ProductForm: Page = ({
                                 {errors?.countryOfOrigin?.message}
                             </small>
                         )}
-
                         <h6>Short Description</h6>
                         <Controller
                             name="shortDescription"
@@ -434,7 +508,47 @@ const ProductForm: Page = ({
                                 {errors?.shortDescription?.message}
                             </small>
                         )}
-                        <h6>Detailed Description</h6>
+                        <Message
+                            severity="info"
+                            text="Tip: Write a short description of the product and click on the 'Generate with AI' button to generate a detailed description."
+                            className="mb-3"
+                        />
+                        <div className="flex mb-2 mt-4 align-items-center justify-content-between">
+                            <h6 className="mb-0 w-full">Detailed Description</h6>{' '}
+                            <Button
+                                type="button"
+                                label={
+                                    aiPending
+                                        ? 'Generating…'
+                                        : hasGenerated
+                                        ? 'Regenerate with AI'
+                                        : 'Generate with AI'
+                                }
+                                icon={<FaMagic />}
+                                loading={aiPending}
+                                disabled={!watch('shortDescription')}
+                                title="Generate detailed description using AI from the above short description. Click to generate."
+                                onClick={() => {
+                                    // reset trackers for a new run
+                                    setHasGenerated(true);
+                                    lastAssistantIdRef.current = null;
+                                    lastLenRef.current = 0;
+                                    if (settleTimerRef.current)
+                                        clearTimeout(settleTimerRef.current);
+
+                                    // (optional) clear existing description before streaming
+                                    setValue('detailedDescription', '', {
+                                        shouldDirty: true
+                                    });
+
+                                    setAiPending(true);
+                                    sendMessage({ text: prompt });
+                                }}
+                                outlined
+                                badge={hasGenerated ? undefined : 'NEW'}
+                                badgeClassName="p-badge-danger"
+                            />
+                        </div>
 
                         <Controller
                             name="detailedDescription"
@@ -446,6 +560,7 @@ const ProductForm: Page = ({
                                     value={field.value}
                                     onChange={field.onChange}
                                     onBlur={field.onBlur}
+                                    readOnly={aiPending}
                                     defaultValue={'afsdsd'}
                                     className={classNames({
                                         'p-invalid': fieldState.invalid
@@ -458,7 +573,6 @@ const ProductForm: Page = ({
                                 {errors?.detailedDescription?.message}
                             </small>
                         )}
-
                         <h6>Available Stock</h6>
                         <Controller
                             name="stock"
@@ -484,7 +598,6 @@ const ProductForm: Page = ({
                         {errors.stock && (
                             <small className="p-error">{errors?.stock?.message}</small>
                         )}
-
                         <h6>Tags</h6>
                         <Controller
                             name="tags"
@@ -544,29 +657,30 @@ const ProductForm: Page = ({
                             maxFileSize={10000000}
                             onUpload={onImagesUpload}
                             emptyTemplate={
-                                <p className="m-0 py-5">Drag and drop files to here to upload.</p>
+                                <p className="m-0 py-5">
+                                    Drag and drop files to here to upload.
+                                </p>
                             }
                         />
 
                         <h6>Uploaded Images</h6>
                         <div className="grid pt-4 gap-4">
-                            {watch("images") &&
-                                watch("images").map((item, i) => (
-                                    <div
-                                        key={i}
-                                        className="col-6 md:col-4 mb-2 relative"
-                                    >
+                            {watch('images') &&
+                                watch('images').map((item, i) => (
+                                    <div key={i} className="col-6 md:col-4 mb-2 relative">
                                         <img
                                             src={item}
-                                            alt="image" 
-                                            style={{ objectFit: "contain" }}
+                                            alt="image"
+                                            style={{ objectFit: 'contain' }}
                                             className="w-full shadow-2 rounded"
                                         />
                                         <button
                                             type="button"
                                             onClick={() => {
-                                                const updated = watch("images").filter((_, index) => index !== i);
-                                                setValue("images", updated); 
+                                                const updated = watch('images').filter(
+                                                    (_, index) => index !== i
+                                                );
+                                                setValue('images', updated);
                                             }}
                                             className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs"
                                         >
@@ -576,7 +690,6 @@ const ProductForm: Page = ({
                                 ))}
                         </div>
                     </div>
-
 
                     <div className="card">
                         <h5>Product Videos</h5>
@@ -621,7 +734,7 @@ const ProductForm: Page = ({
                                     rules={{ required: 'Length is required.' }}
                                     render={({ field, fieldState }) => (
                                         <InputNumber
-                                            placeholder='(Enter length in cm)'
+                                            placeholder="(Enter length in cm)"
                                             suffix="cm"
                                             id={field.name}
                                             ref={field.ref}
@@ -654,7 +767,7 @@ const ProductForm: Page = ({
                                     rules={{ required: 'Width is required.' }}
                                     render={({ field, fieldState }) => (
                                         <InputNumber
-                                            placeholder='(Enter width in cm)'
+                                            placeholder="(Enter width in cm)"
                                             suffix="cm"
                                             id={field.name}
                                             ref={field.ref}
@@ -687,7 +800,7 @@ const ProductForm: Page = ({
                                     rules={{ required: 'Height is required.' }}
                                     render={({ field, fieldState }) => (
                                         <InputNumber
-                                            placeholder='(Enter height in cm)'
+                                            placeholder="(Enter height in cm)"
                                             suffix="cm"
                                             id={field.name}
                                             ref={field.ref}
@@ -720,7 +833,7 @@ const ProductForm: Page = ({
                                     rules={{ required: 'Weight is required.' }}
                                     render={({ field, fieldState }) => (
                                         <InputNumber
-                                            placeholder='(Minimum 1 kg)'
+                                            placeholder="(Minimum 1 kg)"
                                             suffix="kg"
                                             id={field.name}
                                             ref={field.ref}
