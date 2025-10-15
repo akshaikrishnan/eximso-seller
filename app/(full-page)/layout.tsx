@@ -9,7 +9,7 @@ interface SimpleLayoutProps {
 
 export const metadata: Metadata = {
     title: 'Eximso | Seller Panel',
-    description: 'Seller dashboard of Eximso b2b ecommerce'
+    description: 'Seller dashboard for Eximso cross border e-commerce'
 };
 
 export default function SimpleLayout({ children }: SimpleLayoutProps) {
