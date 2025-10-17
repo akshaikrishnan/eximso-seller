@@ -19,6 +19,10 @@ export type RecentSalesMeta = {
     statuses: string[];
     startDate: string | null;
     endDate: string | null;
+    ordersDelta?: number;
+    ordersDeltaPercent?: number;
+    revenueDelta?: number;
+    revenueDeltaPercent?: number;
 };
 
 export type RecentSalesEnvelope = {
