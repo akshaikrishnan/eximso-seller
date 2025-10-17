@@ -15,6 +15,7 @@ import { useRecentSales } from '@/lib/hooks/useRecentSales';
 import BestSelling from '@/demo/components/BestSelling';
 import SalesChart from '@/demo/components/SalesChart';
 import { GrowthIndicator } from '@/components/GrowthIndicator';
+import { dataTagErrorSymbol } from '@tanstack/react-query';
 
 const Dashboard = () => {
     const {
@@ -171,9 +172,14 @@ const Dashboard = () => {
                         <Column
                             header="View"
                             style={{ width: '15%' }}
-                            body={() => (
+                            body={(data) => (
                                 <>
-                                    <Button icon="pi pi-search" text />
+                                    {' '}
+                                    <Link
+                                        href={`seller/manage-product/${data.product._id}`}
+                                    >
+                                        <Button icon="pi pi-search" text />
+                                    </Link>
                                 </>
                             )}
                         />
