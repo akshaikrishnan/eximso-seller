@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 const sqs = new SQSClient({ region: process.env.REGION });
 

@@ -7,7 +7,7 @@ interface AppLayoutProps {
 
 export const metadata: Metadata = {
     title: 'Eximso | Seller Panel',
-    description: 'Seller dashboard of Eximso b2b ecommerce',
+    description: 'Seller dashboard for Eximso cross border e-commerce',
     robots: { index: false, follow: false },
     viewport: { initialScale: 1, width: 'device-width' },
     metadataBase: new URL('https://eximso-seller.vercel.app'),
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
         type: 'website',
         title: 'Eximso | Seller Panel',
         url: 'https://sakai.primereact.org/',
-        description: 'Seller dashboard of Eximso b2b ecommerce',
+        description: 'Seller dashboard for Eximso cross border e-commerce',
         images: ['/layout/images/banner-dark.jpeg'],
         ttl: 604800
     },

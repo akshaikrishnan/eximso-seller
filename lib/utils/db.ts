@@ -1,34 +1,47 @@
+// lib/db.ts
 import mongoose from 'mongoose';
 
-const DATABASE_URL = process.env.MONGODB_URI!;
+const MONGODB_URI = process.env.MONGODB_URI!;
+if (!MONGODB_URI) throw new Error('Missing MONGODB_URI');
 
-if (!DATABASE_URL) {
-    throw new Error('Please define the DATABASE_URL environment variable inside .env.local');
+declare global {
+    // eslint-disable-next-line no-var
+    var __mongoose: {
+        conn: typeof mongoose | null;
+        promise: Promise<typeof mongoose> | null;
+    };
 }
+global.__mongoose ||= { conn: null, promise: null };
 
-let cached = (global as any).mongoose;
+export const runtime = 'nodejs'; // ensure Node runtime for route handlers
 
-if (!cached) {
-    cached = (global as any).mongoose = { conn: null, promise: null };
-}
-
-async function connectDB() {
-    // console.log(DATABASE_URL)
-    if (cached.conn) {
-        return cached.conn;
+export default async function connectDB() {
+    if (global.__mongoose.conn && mongoose.connection.readyState === 1) {
+        return global.__mongoose.conn;
     }
 
-    if (!cached.promise) {
+    if (!global.__mongoose.promise) {
+        // One-time driver tuning
+        mongoose.set('strictQuery', true);
+        // Disable autoIndex in prod to avoid boot-time index builds
+        mongoose.set('autoIndex', process.env.NODE_ENV !== 'production');
+
         const opts = {
-            bufferCommands: false
-        };
+            // keep buffers off so you fail fast instead of hanging
+            bufferCommands: false,
+            // pool & timeouts (tweak as you need)
+            maxPoolSize: 10,
+            minPoolSize: 0,
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 45000,
+            family: 4 // prefer IPv4 (avoids some slow IPv6 DNS paths)
+            // If you connect to a single non-replica host, consider:
+            // directConnection: true,
+        } as const;
 
-        cached.promise = mongoose.connect(DATABASE_URL, opts).then((mongoose) => {
-            return mongoose;
-        });
+        global.__mongoose.promise = mongoose.connect(MONGODB_URI, opts).then((m) => m);
     }
-    cached.conn = await cached.promise;
-    return cached.conn;
-}
 
-export default connectDB;
+    global.__mongoose.conn = await global.__mongoose.promise;
+    return global.__mongoose.conn;
+}
