@@ -50,11 +50,13 @@ const PhoneNumberField = ({
                         }}
                         specialLabel=""
                         enableSearch
-                        inputClass={classNames('p-inputtext p-component w-full', {
+                        inputClass={classNames('p-inputtext p-component w-full md:w-30rem phone-input-field', {
                             'p-invalid': fieldState.invalid || hasError
                         })}
-                        buttonClass="phone-country-dropdown"
-                        containerClass="w-full"
+                        buttonClass={classNames('phone-country-dropdown', {
+                            'p-invalid': fieldState.invalid || hasError
+                        })}
+                        containerClass="w-full phone-input-container"
                         disableCountryCode={false}
                         countryCodeEditable={false}
                         inputProps={{

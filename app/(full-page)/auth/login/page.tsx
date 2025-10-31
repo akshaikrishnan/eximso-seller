@@ -59,6 +59,7 @@ const LoginPage = () => {
     const [resendSeconds, setResendSeconds] = useState(0);
     const [isProcessing, setIsProcessing] = useState(false);
     const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
+    const recaptchaWidgetIdRef = useRef<number | null>(null);
     const formRef = useRef<HTMLFormElement>(null);
     const buyerDomain = process.env.NEXT_PUBLIC_BUYER_DOMAIN;
 
@@ -181,14 +182,7 @@ const LoginPage = () => {
         return parsed ? undefined : 'Invalid phone number';
     }, [phoneValue]);
 
-    const resetRecaptcha = () => {
-        if (recaptchaVerifierRef.current) {
-            recaptchaVerifierRef.current.clear();
-            recaptchaVerifierRef.current = null;
-        }
-    };
-
-    const renderRecaptcha = async () => {
+    const ensureRecaptcha = async () => {
         if (typeof window === 'undefined') return null;
         if (!recaptchaVerifierRef.current) {
             recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
@@ -197,17 +191,37 @@ const LoginPage = () => {
                     // recaptcha solved
                 },
                 'expired-callback': () => {
-                    resetRecaptcha();
+                    if (typeof window === 'undefined') return;
+                    const grecaptcha = (window as any).grecaptcha;
+                    if (grecaptcha?.reset && recaptchaWidgetIdRef.current !== null) {
+                        grecaptcha.reset(recaptchaWidgetIdRef.current);
+                    }
                 }
             });
-            await recaptchaVerifierRef.current.render();
+        }
+        if (recaptchaVerifierRef.current && recaptchaWidgetIdRef.current === null) {
+            recaptchaWidgetIdRef.current = await recaptchaVerifierRef.current.render();
         }
         return recaptchaVerifierRef.current;
     };
 
     const refreshRecaptcha = async () => {
-        resetRecaptcha();
-        return renderRecaptcha();
+        const verifier = await ensureRecaptcha();
+        if (typeof window !== 'undefined' && recaptchaWidgetIdRef.current !== null) {
+            const grecaptcha = (window as any).grecaptcha;
+            if (grecaptcha?.reset) {
+                grecaptcha.reset(recaptchaWidgetIdRef.current);
+            }
+        }
+        return verifier;
+    };
+
+    const clearRecaptcha = () => {
+        if (recaptchaVerifierRef.current) {
+            recaptchaVerifierRef.current.clear();
+            recaptchaVerifierRef.current = null;
+        }
+        recaptchaWidgetIdRef.current = null;
     };
 
     const resetPhoneFlow = () => {
@@ -218,13 +232,13 @@ const LoginPage = () => {
         setFormattedPhone('');
         setFormValue('otp', '');
         setResendSeconds(0);
-        resetRecaptcha();
+        void refreshRecaptcha();
     };
 
     useEffect(() => {
-        void renderRecaptcha();
+        void ensureRecaptcha();
         return () => {
-            resetRecaptcha();
+            clearRecaptcha();
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
