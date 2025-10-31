@@ -4,9 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Checkbox } from 'primereact/checkbox';
 import { Button } from 'primereact/button';
-import { Password } from 'primereact/password';
 import { LayoutContext } from '../../../../layout/context/layoutcontext';
-import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import { SelectButton } from 'primereact/selectbutton';
 
@@ -16,13 +14,12 @@ import { Divider } from 'primereact/divider';
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { endpoints } from '@/lib/constants/endpoints';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { decodeJWT } from '@/lib/utils/getDataFromToken';
 import { Dialog } from 'primereact/dialog';
 import Link from 'next/link';
 import AppFooter from '@/layout/AppFooter';
-import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import { auth } from '@/lib/firebase/client';
@@ -32,13 +29,13 @@ import {
     signInWithPhoneNumber,
     signOut
 } from 'firebase/auth';
+import EmailField from './components/EmailField';
+import PhoneNumberField from './components/PhoneNumberField';
+import OtpField from './components/OtpField';
+import PasswordField from './components/PasswordField';
+import { LoginInputs } from './types';
 
-type LoginInputs = {
-    email: string;
-    password?: string;
-    phone?: string;
-    otp?: string;
-};
+const RESEND_TIMEOUT_SECONDS = 60;
 
 const LoginPage = () => {
     const [checked, setChecked] = useState(false);
@@ -59,6 +56,7 @@ const LoginPage = () => {
     const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
     const [phoneIdToken, setPhoneIdToken] = useState<string | null>(null);
     const [formattedPhone, setFormattedPhone] = useState('');
+    const [resendSeconds, setResendSeconds] = useState(0);
     const [isProcessing, setIsProcessing] = useState(false);
     const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
     const formRef = useRef<HTMLFormElement>(null);
@@ -84,6 +82,26 @@ const LoginPage = () => {
     const phoneValue = watch('phone');
     const otpValue = watch('otp');
     const emailValue = watch('email');
+
+    useEffect(() => {
+        if (!otpSent || isOtpVerified || resendSeconds <= 0) {
+            return;
+        }
+
+        const timer = window.setInterval(() => {
+            setResendSeconds((prev) => (prev > 0 ? prev - 1 : 0));
+        }, 1000);
+
+        return () => {
+            window.clearInterval(timer);
+        };
+    }, [otpSent, isOtpVerified, resendSeconds]);
+
+    useEffect(() => {
+        if (!otpSent) {
+            setResendSeconds(0);
+        }
+    }, [otpSent]);
 
     useEffect(() => {
         let isActive = true;
@@ -163,6 +181,35 @@ const LoginPage = () => {
         return parsed ? undefined : 'Invalid phone number';
     }, [phoneValue]);
 
+    const resetRecaptcha = () => {
+        if (recaptchaVerifierRef.current) {
+            recaptchaVerifierRef.current.clear();
+            recaptchaVerifierRef.current = null;
+        }
+    };
+
+    const renderRecaptcha = async () => {
+        if (typeof window === 'undefined') return null;
+        if (!recaptchaVerifierRef.current) {
+            recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                size: 'invisible',
+                callback: () => {
+                    // recaptcha solved
+                },
+                'expired-callback': () => {
+                    resetRecaptcha();
+                }
+            });
+            await recaptchaVerifierRef.current.render();
+        }
+        return recaptchaVerifierRef.current;
+    };
+
+    const refreshRecaptcha = async () => {
+        resetRecaptcha();
+        return renderRecaptcha();
+    };
+
     const resetPhoneFlow = () => {
         setOtpSent(false);
         setIsOtpVerified(false);
@@ -170,21 +217,17 @@ const LoginPage = () => {
         setPhoneIdToken(null);
         setFormattedPhone('');
         setFormValue('otp', '');
+        setResendSeconds(0);
+        resetRecaptcha();
     };
 
-    const ensureRecaptcha = async () => {
-        if (typeof window === 'undefined') return null;
-        if (recaptchaVerifierRef.current) {
-            recaptchaVerifierRef.current.clear();
-            recaptchaVerifierRef.current = null;
-        }
-        const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-            size: 'invisible'
-        });
-        recaptchaVerifierRef.current = verifier;
-        await verifier.render();
-        return verifier;
-    };
+    useEffect(() => {
+        void renderRecaptcha();
+        return () => {
+            resetRecaptcha();
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const redirectUser = (token: string, newUser: boolean) => {
         if (!token) return;
@@ -214,29 +257,65 @@ const LoginPage = () => {
         }
     };
 
-    const handlePhoneSubmit = async (data: LoginInputs, e164Phone: string) => {
-        if (!otpSent) {
-            setIsProcessing(true);
-            toast.loading('Sending OTP...', { id: 'login-loading' });
-            try {
+    const sendOtp = async (e164Phone: string, { isResend = false }: { isResend?: boolean } = {}) => {
+        setIsProcessing(true);
+        toast.loading(isResend ? 'Resending OTP...' : 'Sending OTP...', { id: 'login-loading' });
+        try {
+            if (!otpSent || formattedPhone !== e164Phone) {
                 const response = await checkUserMutation.mutateAsync({ phone: e164Phone });
                 setIsNewUser(response.data.isNewUser);
-                const verifier = await ensureRecaptcha();
-                if (!verifier) {
-                    throw new Error('Unable to initialise phone verification.');
-                }
-                const confirmation = await signInWithPhoneNumber(auth, e164Phone, verifier);
-                setConfirmationResult(confirmation);
-                setOtpSent(true);
-                setFormattedPhone(e164Phone);
-                toast.success('OTP sent successfully');
-            } catch (error: any) {
-                toast.error(error?.response?.data?.message || error?.message || 'Unable to send OTP');
-                resetPhoneFlow();
-            } finally {
-                toast.dismiss('login-loading');
-                setIsProcessing(false);
             }
+            const verifier = await refreshRecaptcha();
+            if (!verifier) {
+                throw new Error('Unable to initialise phone verification.');
+            }
+            const confirmation = await signInWithPhoneNumber(auth, e164Phone, verifier);
+            setConfirmationResult(confirmation);
+            setOtpSent(true);
+            setIsOtpVerified(false);
+            setFormattedPhone(e164Phone);
+            setResendSeconds(RESEND_TIMEOUT_SECONDS);
+            toast.success('OTP sent successfully');
+            void refreshRecaptcha();
+        } catch (error: any) {
+            const firebaseErrorCode = error?.code || error?.response?.data?.error?.message;
+            if (
+                firebaseErrorCode === 'auth/operation-not-allowed' ||
+                firebaseErrorCode === 'OPERATION_NOT_ALLOWED'
+            ) {
+                toast.error(
+                    'Phone login is disabled for this project. Please contact the administrator to enable it.'
+                );
+            } else {
+                toast.error(error?.response?.data?.message || error?.message || 'Unable to send OTP');
+            }
+            if (!isResend) {
+                resetPhoneFlow();
+            } else {
+                setResendSeconds(0);
+            }
+        } finally {
+            toast.dismiss('login-loading');
+            setIsProcessing(false);
+        }
+    };
+
+    const handleResendOtp = async () => {
+        if (isProcessing || resendSeconds > 0) {
+            return;
+        }
+        const parsedPhone = parsePhone(phoneValue);
+        if (!parsedPhone) {
+            setError('phone', { message: 'Valid phone number is required.' });
+            toast.error('Please enter a valid phone number.');
+            return;
+        }
+        await sendOtp(parsedPhone, { isResend: true });
+    };
+
+    const handlePhoneSubmit = async (data: LoginInputs, e164Phone: string) => {
+        if (!otpSent) {
+            await sendOtp(e164Phone);
             return;
         }
 
@@ -260,6 +339,7 @@ const LoginPage = () => {
                 setPhoneIdToken(idToken);
                 setIsOtpVerified(true);
                 setFormValue('otp', '');
+                setResendSeconds(0);
                 if (!isNewUser) {
                     const response = await loginMutation.mutateAsync({
                         phone: e164Phone,
@@ -523,246 +603,57 @@ const LoginPage = () => {
                             </div>
                             <div>
                                 {authTypeValue === 'email' && (
-                                    <div className="flex flex-column gap-2 mb-3">
-                                        <label
-                                            htmlFor="email1"
-                                            className="block text-900 text-xl font-medium "
-                                        >
-                                            Email
-                                        </label>
-                                        <Controller
-                                            name="email"
-                                            control={control}
-                                            rules={{
-                                                required: 'Email is required.',
-                                                pattern: {
-                                                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                                    message: 'Invalid email address. E.g. example@email.com'
-                                                }
-                                            }}
-                                            render={({ field, fieldState }) => (
-                                                <InputText
-                                                    id={field.name}
-                                                    {...field}
-                                                    autoFocus
-                                                    style={{ padding: '1rem' }}
-                                                    className={classNames(
-                                                        'w-full md:w-30rem',
-                                                        {
-                                                            'p-invalid': fieldState.invalid
-                                                        }
-                                                    )}
-                                                    readOnly={userChecked && !isNewUser}
-                                                />
-                                            )}
-                                        />
-                                        {errors.email && (
-                                            <small className="p-error">
-                                                {errors?.email?.message}
-                                            </small>
-                                        )}
-                                    </div>
+                                    <EmailField
+                                        control={control}
+                                        errors={errors}
+                                        autoFocus
+                                        readOnly={userChecked && !isNewUser}
+                                    />
                                 )}
                                 {authTypeValue === 'phone' && (
-                                    <div className="flex flex-column gap-2 mb-3">
-                                        <label
-                                            htmlFor="phone"
-                                            className="block text-900 text-xl font-medium "
-                                        >
-                                            Phone
-                                        </label>
-                                        <Controller
-                                            name="phone"
-                                            control={control}
-                                            rules={{
-                                                required: 'Phone is required.'
-                                            }}
-                                            render={({ field, fieldState }) => (
-                                                <PhoneInput
-                                                    country={defaultCountry}
-                                                    value={field.value || ''}
-                                                    onChange={(value) => {
-                                                        const normalized = value
-                                                            ? value.startsWith('+')
-                                                                ? value
-                                                                : `+${value}`
-                                                            : '';
-                                                        field.onChange(normalized);
-                                                    }}
-                                                    specialLabel=""
-                                                    enableSearch
-                                                    inputClass={classNames('p-inputtext p-component w-full', {
-                                                        'p-invalid': fieldState.invalid || (!!phoneError && otpSent)
-                                                    })}
-                                                    buttonClass="phone-country-dropdown"
-                                                    containerClass="w-full"
-                                                    disableCountryCode={false}
-                                                    countryCodeEditable={false}
-                                                    inputProps={{
-                                                        name: field.name,
-                                                        required: true,
-                                                        autoFocus: true
-                                                    }}
-                                                    searchPlaceholder="Search country"
-                                                />
-                                            )}
-                                        />
-                                        {(errors.phone || (otpSent && phoneError)) && (
-                                            <small className="p-error">
-                                                {errors?.phone?.message || phoneError}
-                                            </small>
-                                        )}
-                                    </div>
+                                    <PhoneNumberField
+                                        control={control}
+                                        errors={errors}
+                                        defaultCountry={defaultCountry}
+                                        errorMessage={otpSent ? phoneError : undefined}
+                                        autoFocus
+                                        disabled={otpSent && !isOtpVerified}
+                                    />
                                 )}
                                 {otpSent && authTypeValue === 'phone' && !isOtpVerified && (
-                                    <div className="flex flex-column gap-2 mb-3">
-                                        <label
-                                            htmlFor="otp"
-                                            className="block text-900 text-xl font-medium "
-                                        >
-                                            Enter OTP
-                                        </label>
-                                        <Controller
-                                            name="otp"
-                                            control={control}
-                                            rules={{ required: 'OTP is required.' }}
-                                            render={({ field, fieldState }) => (
-                                                <InputText
-                                                    id={field.name}
-                                                    {...field}
-                                                    maxLength={6}
-                                                    style={{ padding: '1rem' }}
-                                                    className={classNames('w-full md:w-30rem', {
-                                                        'p-invalid': fieldState.invalid
-                                                    })}
-                                                />
-                                            )}
-                                        />
-                                        {errors.otp && (
-                                            <small className="p-error">{errors?.otp?.message}</small>
-                                        )}
-                                        <div className="text-600">
-                                            We sent an OTP to {formattedPhone}. Please enter it above.
-                                        </div>
-                                    </div>
+                                    <OtpField
+                                        control={control}
+                                        errors={errors}
+                                        formattedPhone={formattedPhone}
+                                        resendSeconds={resendSeconds}
+                                        onResend={handleResendOtp}
+                                        isResendDisabled={resendSeconds > 0}
+                                        isProcessing={isProcessing}
+                                    />
                                 )}
                                 {authTypeValue === 'phone' && isNewUser && isOtpVerified && (
-                                    <div className="flex flex-column gap-2 mb-3">
-                                        <label
-                                            htmlFor="emailAfterOtp"
-                                            className="block text-900 text-xl font-medium "
-                                        >
-                                            Email
-                                        </label>
-                                        <Controller
-                                            name="email"
-                                            control={control}
-                                            rules={{
-                                                required: 'Email is required.',
-                                                pattern: {
-                                                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                                    message: 'Invalid email address. E.g. example@email.com'
-                                                }
-                                            }}
-                                            render={({ field, fieldState }) => (
-                                                <InputText
-                                                    id={field.name}
-                                                    {...field}
-                                                    style={{ padding: '1rem' }}
-                                                    className={classNames('w-full md:w-30rem', {
-                                                        'p-invalid': fieldState.invalid
-                                                    })}
-                                                />
-                                            )}
-                                        />
-                                        {errors.email && (
-                                            <small className="p-error">
-                                                {errors?.email?.message}
-                                            </small>
-                                        )}
-                                    </div>
+                                    <EmailField
+                                        control={control}
+                                        errors={errors}
+                                        label="Email"
+                                        autoFocus
+                                    />
                                 )}
                                 {authTypeValue === 'email' && userChecked && isNewUser && (
-                                    <div className="flex flex-column gap-2 mb-3">
-                                        <label
-                                            htmlFor="phoneForEmail"
-                                            className="block text-900 text-xl font-medium "
-                                        >
-                                            Phone
-                                        </label>
-                                        <Controller
-                                            name="phone"
-                                            control={control}
-                                            rules={{
-                                                required: 'Phone is required.'
-                                            }}
-                                            render={({ field, fieldState }) => (
-                                                <PhoneInput
-                                                    country={defaultCountry}
-                                                    value={field.value || ''}
-                                                    onChange={(value) => {
-                                                        const normalized = value
-                                                            ? value.startsWith('+')
-                                                                ? value
-                                                                : `+${value}`
-                                                            : '';
-                                                        field.onChange(normalized);
-                                                    }}
-                                                    specialLabel=""
-                                                    enableSearch
-                                                    inputClass={classNames('p-inputtext p-component w-full', {
-                                                        'p-invalid': fieldState.invalid
-                                                    })}
-                                                    buttonClass="phone-country-dropdown"
-                                                    containerClass="w-full"
-                                                    disableCountryCode={false}
-                                                    countryCodeEditable={false}
-                                                    inputProps={{
-                                                        name: field.name,
-                                                        required: true
-                                                    }}
-                                                    searchPlaceholder="Search country"
-                                                />
-                                            )}
-                                        />
-                                        {errors.phone && (
-                                            <small className="p-error">{errors?.phone?.message}</small>
-                                        )}
-                                    </div>
+                                    <PhoneNumberField
+                                        control={control}
+                                        errors={errors}
+                                        defaultCountry={defaultCountry}
+                                    />
                                 )}
                                 {showPasswordField && (
-                                    <div className="flex flex-column gap-2">
-                                        <label
-                                            htmlFor="password1"
-                                            className="block text-900 font-medium text-xl "
-                                        >
-                                            Password
-                                        </label>
-                                        <Controller
-                                            name="password"
-                                            control={control}
-                                            rules={{
-                                                required:
-                                                    isNewUser || authTypeValue === 'email'
-                                                        ? 'Password is required.'
-                                                        : undefined
-                                            }}
-                                            render={({ field, fieldState }) => (
-                                                <Password
-                                                    id={field.name}
-                                                    {...field}
-                                                    toggleMask
-                                                    inputClassName="w-full p-3 md:w-30rem"
-                                                    className={classNames('w-full mb-5', {
-                                                        'p-invalid': fieldState.invalid
-                                                    })}
-                                                    header={passwordHeader}
-                                                    footer={passwordFooter}
-                                                    feedback={isNewUser}
-                                                />
-                                            )}
-                                        />
-                                    </div>
+                                    <PasswordField
+                                        control={control}
+                                        errors={errors}
+                                        passwordHeader={passwordHeader}
+                                        passwordFooter={passwordFooter}
+                                        requirePassword={isNewUser || authTypeValue === 'email'}
+                                    />
                                 )}
 
                                 {showRememberMe && (
