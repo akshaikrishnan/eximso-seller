@@ -32,6 +32,8 @@ const User = new mongoose.Schema(
         gstCertificate: { type: String },
         bankCheque: { type: String },
         password: { type: String },
+        isPhoneVerified: { type: Boolean, default: false },
+        isEmailVerified: { type: Boolean, default: false },
         isActive: { type: Boolean, default: true },
         isDelete: { type: Boolean, default: false }
     },
