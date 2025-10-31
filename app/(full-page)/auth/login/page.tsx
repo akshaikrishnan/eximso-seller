@@ -22,8 +22,6 @@ import Link from 'next/link';
 import AppFooter from '@/layout/AppFooter';
 import 'react-phone-input-2/lib/style.css';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
-import { auth } from '@/lib/firebase/client';
-import { RecaptchaVerifier } from 'firebase/auth';
 import EmailField from './components/EmailField';
 import PhoneNumberField from './components/PhoneNumberField';
 import OtpField from './components/OtpField';
@@ -51,8 +49,6 @@ const LoginPage = () => {
     const [formattedPhone, setFormattedPhone] = useState('');
     const [resendSeconds, setResendSeconds] = useState(0);
     const [isProcessing, setIsProcessing] = useState(false);
-    const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
-    const recaptchaWidgetIdRef = useRef<number | null>(null);
     const webOtpControllerRef = useRef<AbortController | null>(null);
     const formRef = useRef<HTMLFormElement>(null);
     const buyerDomain = process.env.NEXT_PUBLIC_BUYER_DOMAIN;
@@ -176,63 +172,12 @@ const LoginPage = () => {
         return parsed ? undefined : 'Invalid phone number';
     }, [phoneValue]);
 
-    const ensureRecaptcha = async () => {
-        if (typeof window === 'undefined') return null;
-        if (!recaptchaVerifierRef.current) {
-            recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
-                size: 'invisible',
-                callback: () => {
-                    // recaptcha solved
-                },
-                'expired-callback': () => {
-                    if (typeof window === 'undefined') return;
-                    const grecaptcha = (window as any).grecaptcha;
-                    if (grecaptcha?.reset && recaptchaWidgetIdRef.current !== null) {
-                        grecaptcha.reset(recaptchaWidgetIdRef.current);
-                    }
-                }
-            });
-        }
-        if (recaptchaVerifierRef.current && recaptchaWidgetIdRef.current === null) {
-            recaptchaWidgetIdRef.current = await recaptchaVerifierRef.current.render();
-        }
-        return recaptchaVerifierRef.current;
-    };
-
-    const refreshRecaptcha = async () => {
-        const verifier = await ensureRecaptcha();
-        if (typeof window !== 'undefined' && recaptchaWidgetIdRef.current !== null) {
-            const grecaptcha = (window as any).grecaptcha;
-            if (grecaptcha?.reset) {
-                grecaptcha.reset(recaptchaWidgetIdRef.current);
-            }
-        }
-        return verifier;
-    };
-
-    const executeRecaptcha = async () => {
-        const verifier = await ensureRecaptcha();
-        if (!verifier) {
-            throw new Error('Unable to initialise phone verification.');
-        }
-        return verifier.verify();
-    };
-
-    const clearRecaptcha = () => {
-        if (recaptchaVerifierRef.current) {
-            recaptchaVerifierRef.current.clear();
-            recaptchaVerifierRef.current = null;
-        }
-        recaptchaWidgetIdRef.current = null;
-    };
-
     const resetPhoneFlow = () => {
         setOtpSent(false);
         setIsOtpVerified(false);
         setFormattedPhone('');
         setFormValue('otp', '');
         setResendSeconds(0);
-        void refreshRecaptcha();
         if (webOtpControllerRef.current) {
             webOtpControllerRef.current.abort();
             webOtpControllerRef.current = null;
@@ -240,15 +185,12 @@ const LoginPage = () => {
     };
 
     useEffect(() => {
-        void ensureRecaptcha();
         return () => {
-            clearRecaptcha();
             if (webOtpControllerRef.current) {
                 webOtpControllerRef.current.abort();
                 webOtpControllerRef.current = null;
             }
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -339,17 +281,14 @@ const LoginPage = () => {
                 const response = await checkUserMutation.mutateAsync({ phone: e164Phone });
                 setIsNewUser(response.data.isNewUser);
             }
-            const recaptchaToken = await executeRecaptcha();
             await axios.post(endpoints.sendOtp, {
-                phone: e164Phone,
-                recaptchaToken
+                phone: e164Phone
             });
             setOtpSent(true);
             setIsOtpVerified(false);
             setFormattedPhone(e164Phone);
             setResendSeconds(RESEND_TIMEOUT_SECONDS);
             toast.success('OTP sent successfully');
-            void refreshRecaptcha();
         } catch (error: any) {
             const message =
                 error?.response?.data?.message ||
@@ -817,7 +756,6 @@ const LoginPage = () => {
                 <AppFooter />
             </div>
 
-            <div id="recaptcha-container" className="hidden" />
 
             <Dialog
                 header="Reset Password Instructions"
