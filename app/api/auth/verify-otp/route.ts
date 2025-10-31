@@ -5,7 +5,8 @@ import api from '@/lib/utils/api.interceptor';
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const phone = typeof body.phone === 'string' ? body.phone.replace(/\s+/g, '') : '';
+        const phone =
+            typeof body.phone === 'string' ? body.phone.replace(/\s+/g, '') : '';
         const code = body.code;
 
         if (!phone || !code) {
@@ -15,7 +16,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const response = await api.post('/verify-otp', { phone, code });
+        const response = await api.post('/auth/verify-otp', { phone, code });
         const data = response.data || {};
 
         if (data.token) {
@@ -30,7 +31,8 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(data);
     } catch (error: any) {
-        const message = error?.response?.data?.message || error?.message || 'Failed to verify OTP';
+        const message =
+            error?.response?.data?.message || error?.message || 'Failed to verify OTP';
         const status = error?.response?.status || 400;
         return NextResponse.json({ message }, { status });
     }
