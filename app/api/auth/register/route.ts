@@ -4,11 +4,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
 import { cookies } from 'next/headers';
 import { sendWelcomeEmail } from '@/lib/email/send-mail';
-import { getFirebaseAdminAuth } from '@/lib/firebase/admin';
 
 export async function POST(req: NextRequest, res: NextResponse) {
     const body = await req.json();
-    const { email, password, userType, phone, firebaseIdToken } = body;
+    const { email, password, userType, phone } = body;
 
     if (!email || !phone || !password) {
         return NextResponse.json({ message: 'Email, phone, and password are required' }, { status: 400 });
@@ -24,35 +23,12 @@ export async function POST(req: NextRequest, res: NextResponse) {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    let isPhoneVerified = false;
-
-    if (firebaseIdToken) {
-        try {
-            const adminAuth = getFirebaseAdminAuth();
-            const decodedToken = await adminAuth.verifyIdToken(firebaseIdToken);
-            if (decodedToken.phone_number !== sanitizedPhone) {
-                return NextResponse.json(
-                    { message: 'Phone number verification failed' },
-                    { status: 400 }
-                );
-            }
-            isPhoneVerified = true;
-        } catch (error: any) {
-            return NextResponse.json(
-                { message: error?.message || 'Failed to verify phone number' },
-                { status: 400 }
-            );
-        }
-    }
-
     // Create a new user
-    const { firebaseIdToken: _omitToken, ...userPayload } = body;
-
     const newUser = await create({
-        ...userPayload,
+        ...body,
         phone: sanitizedPhone,
         password: hashedPassword,
-        isPhoneVerified,
+        isPhoneVerified: true,
         isEmailVerified: false
     });
 

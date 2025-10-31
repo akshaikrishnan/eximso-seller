@@ -23,12 +23,7 @@ import AppFooter from '@/layout/AppFooter';
 import 'react-phone-input-2/lib/style.css';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import { auth } from '@/lib/firebase/client';
-import {
-    ConfirmationResult,
-    RecaptchaVerifier,
-    signInWithPhoneNumber,
-    signOut
-} from 'firebase/auth';
+import { RecaptchaVerifier } from 'firebase/auth';
 import EmailField from './components/EmailField';
 import PhoneNumberField from './components/PhoneNumberField';
 import OtpField from './components/OtpField';
@@ -53,13 +48,12 @@ const LoginPage = () => {
     const [defaultCountry, setDefaultCountry] = useState('in');
     const [otpSent, setOtpSent] = useState(false);
     const [isOtpVerified, setIsOtpVerified] = useState(false);
-    const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
-    const [phoneIdToken, setPhoneIdToken] = useState<string | null>(null);
     const [formattedPhone, setFormattedPhone] = useState('');
     const [resendSeconds, setResendSeconds] = useState(0);
     const [isProcessing, setIsProcessing] = useState(false);
     const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
     const recaptchaWidgetIdRef = useRef<number | null>(null);
+    const webOtpControllerRef = useRef<AbortController | null>(null);
     const formRef = useRef<HTMLFormElement>(null);
     const buyerDomain = process.env.NEXT_PUBLIC_BUYER_DOMAIN;
 
@@ -216,6 +210,14 @@ const LoginPage = () => {
         return verifier;
     };
 
+    const executeRecaptcha = async () => {
+        const verifier = await ensureRecaptcha();
+        if (!verifier) {
+            throw new Error('Unable to initialise phone verification.');
+        }
+        return verifier.verify();
+    };
+
     const clearRecaptcha = () => {
         if (recaptchaVerifierRef.current) {
             recaptchaVerifierRef.current.clear();
@@ -227,21 +229,79 @@ const LoginPage = () => {
     const resetPhoneFlow = () => {
         setOtpSent(false);
         setIsOtpVerified(false);
-        setConfirmationResult(null);
-        setPhoneIdToken(null);
         setFormattedPhone('');
         setFormValue('otp', '');
         setResendSeconds(0);
         void refreshRecaptcha();
+        if (webOtpControllerRef.current) {
+            webOtpControllerRef.current.abort();
+            webOtpControllerRef.current = null;
+        }
     };
 
     useEffect(() => {
         void ensureRecaptcha();
         return () => {
             clearRecaptcha();
+            if (webOtpControllerRef.current) {
+                webOtpControllerRef.current.abort();
+                webOtpControllerRef.current = null;
+            }
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') {
+            return;
+        }
+        const supportsWebOtp = 'OTPCredential' in window;
+        if (!supportsWebOtp) {
+            return;
+        }
+
+        if (!otpSent || isOtpVerified) {
+            if (webOtpControllerRef.current) {
+                webOtpControllerRef.current.abort();
+                webOtpControllerRef.current = null;
+            }
+            return;
+        }
+
+        const controller = new AbortController();
+        webOtpControllerRef.current = controller;
+
+        (async () => {
+            try {
+                const credential: any = await (navigator as any).credentials.get({
+                    otp: { transport: ['sms'] },
+                    signal: controller.signal
+                });
+                if (!credential?.code) {
+                    return;
+                }
+                const parsedPhone = parsePhone(phoneValue);
+                if (!parsedPhone) {
+                    return;
+                }
+                setFormValue('otp', credential.code);
+                await verifyPhoneOtp(parsedPhone, credential.code);
+            } catch (error: any) {
+                if (error?.name === 'AbortError') {
+                    return;
+                }
+                // Ignore other WebOTP failures silently
+            }
+        })();
+
+        return () => {
+            controller.abort();
+            if (webOtpControllerRef.current === controller) {
+                webOtpControllerRef.current = null;
+            }
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [otpSent, isOtpVerified, phoneValue]);
 
     const redirectUser = (token: string, newUser: boolean) => {
         if (!token) return;
@@ -279,12 +339,11 @@ const LoginPage = () => {
                 const response = await checkUserMutation.mutateAsync({ phone: e164Phone });
                 setIsNewUser(response.data.isNewUser);
             }
-            const verifier = await refreshRecaptcha();
-            if (!verifier) {
-                throw new Error('Unable to initialise phone verification.');
-            }
-            const confirmation = await signInWithPhoneNumber(auth, e164Phone, verifier);
-            setConfirmationResult(confirmation);
+            const recaptchaToken = await executeRecaptcha();
+            await axios.post(endpoints.sendOtp, {
+                phone: e164Phone,
+                recaptchaToken
+            });
             setOtpSent(true);
             setIsOtpVerified(false);
             setFormattedPhone(e164Phone);
@@ -292,17 +351,12 @@ const LoginPage = () => {
             toast.success('OTP sent successfully');
             void refreshRecaptcha();
         } catch (error: any) {
-            const firebaseErrorCode = error?.code || error?.response?.data?.error?.message;
-            if (
-                firebaseErrorCode === 'auth/operation-not-allowed' ||
-                firebaseErrorCode === 'OPERATION_NOT_ALLOWED'
-            ) {
-                toast.error(
-                    'Phone login is disabled for this project. Please contact the administrator to enable it.'
-                );
-            } else {
-                toast.error(error?.response?.data?.message || error?.message || 'Unable to send OTP');
-            }
+            const message =
+                error?.response?.data?.message ||
+                error?.response?.data?.error ||
+                error?.message ||
+                'Unable to send OTP';
+            toast.error(message);
             if (!isResend) {
                 resetPhoneFlow();
             } else {
@@ -327,6 +381,49 @@ const LoginPage = () => {
         await sendOtp(parsedPhone, { isResend: true });
     };
 
+    const verifyPhoneOtp = async (e164Phone: string, code: string) => {
+        setIsProcessing(true);
+        toast.loading('Verifying OTP...', { id: 'login-loading' });
+        try {
+            const response = await axios.post(endpoints.verifyOtp, {
+                phone: e164Phone,
+                code
+            });
+            const { isNewUser: newUser, token, name } = response.data;
+            setIsNewUser(newUser);
+            setIsOtpVerified(true);
+            setResendSeconds(0);
+            setFormValue('otp', '');
+            if (webOtpControllerRef.current) {
+                webOtpControllerRef.current.abort();
+                webOtpControllerRef.current = null;
+            }
+            if (!newUser && token) {
+                handleAuthResponse(
+                    {
+                        token,
+                        message: `Welcome back${name ? ` ${name}` : ''}!`
+                    },
+                    false
+                );
+                resetPhoneFlow();
+            } else {
+                toast.success('Phone number verified. Please complete your registration.');
+                setUserChecked(true);
+            }
+        } catch (error: any) {
+            const message =
+                error?.response?.data?.message ||
+                error?.response?.data?.error ||
+                error?.message ||
+                'Invalid OTP';
+            toast.error(message);
+        } finally {
+            toast.dismiss('login-loading');
+            setIsProcessing(false);
+        }
+    };
+
     const handlePhoneSubmit = async (data: LoginInputs, e164Phone: string) => {
         if (!otpSent) {
             await sendOtp(e164Phone);
@@ -339,38 +436,7 @@ const LoginPage = () => {
                 toast.error('Enter the OTP sent to your phone.');
                 return;
             }
-            if (!confirmationResult) {
-                toast.error('Verification session expired. Please resend the OTP.');
-                resetPhoneFlow();
-                return;
-            }
-            setIsProcessing(true);
-            toast.loading('Verifying OTP...', { id: 'login-loading' });
-            try {
-                const credential = await confirmationResult.confirm(otpValue);
-                const idToken = await credential.user.getIdToken();
-                await signOut(auth);
-                setPhoneIdToken(idToken);
-                setIsOtpVerified(true);
-                setFormValue('otp', '');
-                setResendSeconds(0);
-                if (!isNewUser) {
-                    const response = await loginMutation.mutateAsync({
-                        phone: e164Phone,
-                        firebaseIdToken: idToken
-                    });
-                    handleAuthResponse(response.data, false);
-                    resetPhoneFlow();
-                } else {
-                    toast.success('Phone number verified. Please complete your registration.');
-                    setUserChecked(true);
-                }
-            } catch (error: any) {
-                toast.error(error?.response?.data?.message || error?.message || 'Invalid OTP');
-            } finally {
-                toast.dismiss('login-loading');
-                setIsProcessing(false);
-            }
+            await verifyPhoneOtp(e164Phone, otpValue);
             return;
         }
 
@@ -392,8 +458,7 @@ const LoginPage = () => {
                     email: data.email,
                     password: data.password,
                     userType: value,
-                    phone: e164Phone,
-                    firebaseIdToken: phoneIdToken
+                    phone: e164Phone
                 });
                 handleAuthResponse(response.data, true);
                 resetPhoneFlow();

@@ -3,6 +3,8 @@ export const endpoints = {
     login: '/api/auth/login',
     logout: '/api/auth/logout',
     register: '/api/auth/register',
+    sendOtp: '/api/auth/send-otp',
+    verifyOtp: '/api/auth/verify-otp',
     socialLogin: '/api/auth/social-login',
     forgotPassword: '/api/auth/forgot-password',
 

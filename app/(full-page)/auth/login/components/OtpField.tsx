@@ -47,6 +47,9 @@ const OtpField = ({
                         id={field.name}
                         {...field}
                         maxLength={6}
+                        autoComplete="one-time-code"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         style={{ padding: '1rem' }}
                         className={classNames('w-full md:w-30rem', {
                             'p-invalid': fieldState.invalid

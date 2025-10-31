@@ -63,7 +63,8 @@ const PhoneNumberField = ({
                             name: field.name,
                             required: true,
                             autoFocus,
-                            disabled
+                            disabled,
+                            autoComplete: 'tel'
                         }}
                         searchPlaceholder="Search country"
                         disabled={disabled}
