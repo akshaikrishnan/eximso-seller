@@ -99,6 +99,7 @@ const ProductForm: Page = ({
             stock: 0,
             isSampleAvailable: false,
             isPrivateLabeling: false,
+            hsnCode: '',
             ...product
         }
     });
@@ -278,6 +279,32 @@ Prefer short 1-3 word phrases. No duplicates, no punctuation except commas.)
                                 {errors?.modelNumber?.message}
                             </small>
                         )}
+                        <h6>HSN Code</h6>
+                        <Controller
+                            name="hsnCode"
+                            control={control}
+rules={{
+  required: 'HSN code is required.',
+  pattern: {
+    value: /^[0-9]{8}$/,
+    message: 'HSN code must be exactly 8 digits.',
+  },
+}}
+                            render={({ field, fieldState }) => (
+                                <InputText
+                                    id={field.name}
+                                    {...field}
+                                    className={classNames({
+                                        'p-invalid': fieldState.invalid
+                                    })}
+                                />
+                            )}
+                        />
+                        {errors.hsnCode && (
+                            <small className="p-error">
+                                {errors?.hsnCode?.message}
+                            </small>
+                        )}
                         <h6>Status</h6>
                         <ToggleButton
                             checked={watch('isActive')}
@@ -332,7 +359,7 @@ Prefer short 1-3 word phrases. No duplicates, no punctuation except commas.)
                                         validate: (value) =>
                                             value
                                                 ? value < priceWatch ||
-                                                  'Offer price should be less than original price'
+                                                'Offer price should be less than original price'
                                                 : true
                                     }}
                                     render={({ field, fieldState }) => (
@@ -521,8 +548,8 @@ Prefer short 1-3 word phrases. No duplicates, no punctuation except commas.)
                                     aiPending
                                         ? 'Generating…'
                                         : hasGenerated
-                                        ? 'Regenerate with AI'
-                                        : 'Generate with AI'
+                                            ? 'Regenerate with AI'
+                                            : 'Generate with AI'
                                 }
                                 icon={<FaMagic />}
                                 loading={aiPending}
@@ -909,7 +936,7 @@ Prefer short 1-3 word phrases. No duplicates, no punctuation except commas.)
                             </small>
                         )}
 
-                        <h6>Sample Available</h6>
+                        {/* <h6>Sample Available</h6>
                         <ToggleButton
                             checked={watch('isSampleAvailable')}
                             onChange={(e) =>
@@ -926,7 +953,7 @@ Prefer short 1-3 word phrases. No duplicates, no punctuation except commas.)
                                     shouldDirty: true
                                 })
                             }
-                        />
+                        /> */}
                     </div>
                 </div>
 

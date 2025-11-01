@@ -13,6 +13,7 @@ export interface Product {
     videos: string[];
     countryOfOrigin: string;
     modelNumber: string;
+    hsnCode: string;
     minimumOrderQuantity: number;
     isPrivateLabeling: boolean;
     isSampleAvailable: boolean;

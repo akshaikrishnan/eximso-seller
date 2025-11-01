@@ -14,6 +14,7 @@ interface IProduct extends Document {
     videos: string[];
     countryOfOrigin: string;
     modelNumber: string;
+    hsnCode: string;
     minimumOrderQuantity: number;
     isPrivateLabeling: boolean;
     isSampleAvailable: boolean;
@@ -78,6 +79,10 @@ const ProductSchema = new mongoose.Schema(
             required: true
         },
         modelNumber: {
+            type: String,
+            required: true
+        },
+        hsnCode: {
             type: String,
             required: true
         },
