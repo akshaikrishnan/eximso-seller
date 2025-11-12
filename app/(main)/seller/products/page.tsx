@@ -243,11 +243,11 @@ const ListDemo = () => {
 
     const dataviewGridItem = (data: Product) => {
         return (
-            <div className="col-12 lg:col-4">
+            <div className="col-12 lg:col-4 md:col-6">
                 <div
                     className="card m-3 border-4 surface-border"
                     style={{
-                        width: '350px',
+                        // width: '350px',
                         height: '440px',
                         borderRadius: '10px',
                         overflow: 'hidden'
