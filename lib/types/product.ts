@@ -29,4 +29,5 @@ export interface Product {
     subcategory?: string;
     seller: string;
     isActive: boolean;
+    isApproved?: boolean;
 }
