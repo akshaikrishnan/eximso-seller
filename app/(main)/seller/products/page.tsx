@@ -166,7 +166,7 @@ const ListDemo = () => {
     const dataviewListItem = (data: Product) => {
         return (
             <div className="col-12">
-                <div className="flex flex-column md:flex-row align-items-center p-3 w-full">
+                <div className="flex flex-column md:flex-row align-items-center p-3 w-full mb-2 bg-red-200">
                     <Link href={`/seller/manage-product/${data._id}`}>
                         <img
                             src={`${data.thumbnail}`}
@@ -248,7 +248,7 @@ const ListDemo = () => {
                     className="card m-3 border-4 surface-border"
                     style={{
                         // width: '350px',
-                        height: '440px',
+                        height: '445px',
                         borderRadius: '10px',
                         overflow: 'hidden'
                     }} // Set width and height here
@@ -286,7 +286,7 @@ const ListDemo = () => {
                                 }} // Set max height for the image
                             />
                         </Link>
-                        <div className="text-2xl font-bold mb-2">{data.name}</div>
+                        <div className="text-2xl font-bold mb-2" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '2rem', height: '4rem' }}>{data.name}</div>
                         <div
                             className="mb-3 w-full h-12 overflow-hidden text-ellipsis"
                             style={{ width: '100%', height: '52px' }}
