@@ -36,10 +36,12 @@ export async function POST(req: NextRequest, res: NextResponse) {
     await connectDB();
 
     const { email, password, phone } = await req.json();
-    if ((!email && !phone) || !password) {
+    const sanitizedPhone = typeof phone === 'string' ? phone.replace(/\s+/g, '') : undefined;
+
+    if ((!email && !sanitizedPhone) || !password) {
         return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
     }
-    const body = email ? { email: email } : { phone: phone };
+    const body = email ? { email } : { phone: sanitizedPhone };
     const user = await findOne(body);
     if (!user) {
         return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
@@ -49,7 +51,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
         return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
     }
     const token = jwt.sign(
-        { id: user._id.toString(), email: email },
+        { id: user._id.toString(), email: user.email },
         process.env.JWT_SECRET!,
         { expiresIn: '7d' }
     );
