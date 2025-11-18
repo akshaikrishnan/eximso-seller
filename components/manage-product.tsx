@@ -81,7 +81,7 @@ const ProductForm: Page = ({
                 router.push('/seller/products');
             });
             toast.success(
-                `Product ${mode === 'update' ? 'updated' : ' added'} successfully`
+                `Product ${mode === 'update' ? 'updated' : 'added'} successfully, waiting for admin approval.`
             );
         }
     });
@@ -219,15 +219,13 @@ Prefer short 1-3 word phrases. No duplicates, no punctuation except commas.)
 
     return (
         <>
-            {/* {!profile?.phone && (
-                <Link href="/seller/profile">
-                    <Message
-                        severity="warn"
-                        className="w-full mb-3"
-                        text="Please add your phone number in your profile settings to continue adding products."
-                    />
-                </Link>
-            )} */}
+   {product?.isApproved === false ? (
+    <Message
+        severity="info"
+        className="w-full mb-3"
+        text="Your product is pending admin approval. Buyers cannot see this product until admin approval."
+    />
+) : null}
 
             <form className="grid input-demo" onSubmit={handleSubmit(onSubmit)}>
                 <div className="col-12  p-fluid md:col-6">
@@ -283,13 +281,13 @@ Prefer short 1-3 word phrases. No duplicates, no punctuation except commas.)
                         <Controller
                             name="hsnCode"
                             control={control}
-rules={{
-  required: 'HSN code is required.',
-  pattern: {
-    value: /^[0-9]{8}$/,
-    message: 'HSN code must be exactly 8 digits.',
-  },
-}}
+                            rules={{
+                                required: 'HSN code is required.',
+                                pattern: {
+                                    value: /^[0-9]{8}$/,
+                                    message: 'HSN code must be exactly 8 digits.',
+                                },
+                            }}
                             render={({ field, fieldState }) => (
                                 <InputText
                                     id={field.name}
