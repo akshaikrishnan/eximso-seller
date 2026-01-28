@@ -50,7 +50,7 @@ const ProductForm: Page = ({
     const queryClient = useQueryClient();
     const router = useRouter();
     const { messages, sendMessage } = useChat();
-    const [weightUnit, setWeightUnit] = useState<'kg' | 'gram'>('kg');
+    const [weightUnit, setWeightUnit] = useState<'kg' | 'grams'>('kg');
     const [aiPending, setAiPending] = useState(false);
     const [hasGenerated, setHasGenerated] = useState(false);
 
