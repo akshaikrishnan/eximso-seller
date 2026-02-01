@@ -7,8 +7,15 @@ import { sendWelcomeEmail } from '@/lib/email/send-mail';
 
 export async function POST(req: NextRequest, res: NextResponse) {
     const body = await req.json();
-    const { email, password, userType } = body;
-    const existingUser = await findOne({ email });
+    const { email, password, userType, phone } = body;
+
+    if (!email || !phone || !password) {
+        return NextResponse.json({ message: 'Email, phone, and password are required' }, { status: 400 });
+    }
+
+    const sanitizedPhone = typeof phone === 'string' ? phone.replace(/\s+/g, '') : '';
+
+    const existingUser = (await findOne({ email })) || (await findOne({ phone: sanitizedPhone }));
     if (existingUser) {
         return NextResponse.json({ message: 'User already exists' }, { status: 409 });
     }
@@ -17,7 +24,13 @@ export async function POST(req: NextRequest, res: NextResponse) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create a new user
-    const newUser = await create({ ...body, password: hashedPassword });
+    const newUser = await create({
+        ...body,
+        phone: sanitizedPhone,
+        password: hashedPassword,
+        isPhoneVerified: true,
+        isEmailVerified: false
+    });
 
     // Generate a JWT token
     const token = jwt.sign(
