@@ -8,7 +8,7 @@ import { SalesChartEnvelope } from '@/lib/types/sales-chart';
 export const ProductService = {
     getRecentSales(params: RecentSalesParams = {}) {
         return api
-            .get<RecentSalesEnvelope>('/sales/seller/recent', {
+            .get<RecentSalesEnvelope>('/admin/sales/seller/recent', {
                 params,
                 headers: { 'Cache-Control': 'no-cache' } // optional
             })
@@ -22,7 +22,7 @@ export const ProductService = {
         limit?: number;
     }) {
         return api
-            .get<BestSellingResponse>('/sales/seller/best', { params })
+            .get<BestSellingResponse>('/admin/sales/seller/best', { params })
             .then((r) => r.data);
     },
     getSalesChart(params: {
@@ -33,7 +33,7 @@ export const ProductService = {
         productIds?: string; // CSV
     }) {
         return api
-            .get<SalesChartEnvelope>('/sales/seller/chart', { params })
+            .get<SalesChartEnvelope>('/admin/sales/seller/chart', { params })
             .then((r) => r.data);
     },
     getProductsSmall() {

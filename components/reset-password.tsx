@@ -10,7 +10,7 @@ import { classNames } from 'primereact/utils';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { passwordReset } from '../lib/actions/password';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
 interface IResetPass {
@@ -18,7 +18,10 @@ interface IResetPass {
     confirmPassword: string;
 }
 
-export default function ResetPassword() {
+export default function ResetPassword({ shouldLogout }: { shouldLogout?: boolean }) {
+    const searchParams = useSearchParams();
+    const userType = searchParams.get('userType') || 'buyer';
+
     const passwordHeader = <h6>Pick a password</h6>;
     const passwordFooter = (
         <React.Fragment>
@@ -59,13 +62,28 @@ export default function ResetPassword() {
         },
         mode: 'onBlur'
     });
+    const logout = async () => {
+        //wait for 2 seconds
+        await axios.get(`/api/auth/logout?showToast=true&userType=${userType}`);
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        toast.success('Please login again with new password');
+        router.push('/');
+    };
 
     const mutation = useMutation({
         mutationFn: passwordReset,
         onSuccess: (data) => {
             console.log(data);
-            router.push('/');
             toast.success('Password reset successfully');
+            if (shouldLogout) {
+                toast.promise(logout(), {
+                    loading: 'Logging out...',
+                    success: 'Logged out successfully',
+                    error: 'Failed to log out'
+                });
+            } else {
+                router.push('/');
+            }
         },
         onError: (error) => {
             console.log(error);
@@ -79,7 +97,7 @@ export default function ResetPassword() {
         mutation.mutate(formData);
     };
     return (
-        <div className="flex align-items-center justify-content-center">
+        <div className="flex align-items-center justify-content-center flex-1">
             <div className="surface-card p-4 shadow-2 border-round w-full lg:w-6">
                 <div className="text-center mb-5">
                     <img src={profile?.logo} alt="hyper" height={50} className="mb-3" />
