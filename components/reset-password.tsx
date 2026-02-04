@@ -100,7 +100,12 @@ export default function ResetPassword({ shouldLogout }: { shouldLogout?: boolean
         <div className="flex align-items-center justify-content-center flex-1">
             <div className="surface-card p-4 shadow-2 border-round w-full lg:w-6">
                 <div className="text-center mb-5">
-                    <img src={profile?.logo} alt="hyper" height={50} className="mb-3" />
+                    <img
+                        src={profile?.logo}
+                        alt={profile?.name || 'Logo'}
+                        height={50}
+                        className="mb-3"
+                    />
                     <div className="text-900 text-3xl font-medium mb-3">
                         Reset Password
                     </div>

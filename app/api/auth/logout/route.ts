@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 export async function GET(req: NextRequest, res: NextResponse) {
     //get query params
     const searchParams = req.nextUrl.searchParams;
-    const showToast = searchParams.get('showToast') ?? false;
+    const showToast = searchParams.get('showToast') === 'true';
     const userType = searchParams.get('userType') ?? 'buyer';
     cookies().delete('access_token');
     if (showToast) {
