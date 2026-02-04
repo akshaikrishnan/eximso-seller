@@ -176,7 +176,9 @@ const LoginPage = () => {
                 loading={forgotPass.isPending}
                 label="Yes"
                 icon="pi pi-check"
-                onClick={() => forgotPass.mutate({ email: watch('email') })}
+                onClick={() =>
+                    forgotPass.mutate({ email: watch('email'), userType: value })
+                }
                 autoFocus
             />
         </div>
