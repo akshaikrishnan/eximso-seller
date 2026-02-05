@@ -101,9 +101,9 @@ export default function ResetPassword({ shouldLogout }: { shouldLogout?: boolean
             <div className="surface-card p-4 shadow-2 border-round w-full lg:w-6">
                 <div className="text-center mb-5">
                     <img
-                        src={profile?.logo}
+                        src={profile?.logo || '/layout/images/logo-dark.png'}
                         alt={profile?.name || 'Logo'}
-                        height={50}
+                        height={150}
                         className="mb-3"
                     />
                     <div className="text-900 text-3xl font-medium mb-3">
