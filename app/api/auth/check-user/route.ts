@@ -6,6 +6,22 @@ export async function POST(req: NextRequest, res: NextResponse) {
     const email = reqBody.email;
     const phone = reqBody.phone;
 
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/098409a4-79d1-497e-aef5-5cf4170f450b', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: `log_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+            runId: 'pre-fix',
+            hypothesisId: 'H2',
+            location: 'app/api/auth/check-user/route.ts:POST',
+            message: 'Check user called',
+            data: { hasEmail: !!email, hasPhone: !!phone },
+            timestamp: Date.now()
+        })
+    }).catch(() => {});
+    // #endregion
+
     if (!email && !phone) {
         return NextResponse.json(
             { errorCode: 1, message: 'Invalid email or phone', isNewUser: false },
