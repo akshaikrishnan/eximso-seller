@@ -42,7 +42,9 @@ export async function GET(req: NextRequest, res: NextResponse) {
             name: 'access_token',
             value: token,
             httpOnly: true,
-            path: '/'
+            path: '/',
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production'
         });
 
         // #region agent log
@@ -135,7 +137,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
             hypothesisId: 'H2',
             location: 'app/api/auth/login/route.ts:POST',
             message: 'Login POST success',
-            data: { redirectUrl: url.toString() },
+            data: { hasRedirect: true },
             timestamp: Date.now()
         })
     }).catch(() => {});
