@@ -9,7 +9,7 @@ export function middleware(request: NextRequest) {
         const userType = request.nextUrl.searchParams.get('userType');
 
         if (token) {
-            if (userType === 'Buyer') {
+            if (userType?.toLowerCase() === 'buyer') {
                 // Clear the seller's access_token so stale seller sessions
                 // don't auto-authenticate buyer logins.
                 const response = NextResponse.next();

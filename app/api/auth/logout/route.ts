@@ -5,7 +5,7 @@ export async function GET(req: NextRequest, res: NextResponse) {
     //get query params
     const searchParams = req.nextUrl.searchParams;
     const showToast = searchParams.get('showToast') === 'true';
-    const userType = searchParams.get('userType') ?? 'buyer';
+    const userType = (searchParams.get('userType') ?? 'seller').toLowerCase();
     (await cookies()).delete('access_token');
 
     // If a buyer triggered this logout, redirect back to the buyer domain
