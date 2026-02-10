@@ -10,12 +10,11 @@ export function middleware(request: NextRequest) {
 
         if (token) {
             if (userType === 'Buyer') {
-                const url = new URL(
-                    `api/login?token=${token}`,
-                    process.env.NEXT_PUBLIC_BUYER_DOMAIN
-                );
-                console.log(url);
-                return NextResponse.redirect(url);
+                // Clear the seller's access_token so stale seller sessions
+                // don't auto-authenticate buyer logins.
+                const response = NextResponse.next();
+                response.cookies.delete('access_token');
+                return response;
             }
             return NextResponse.redirect(new URL('/', request.url));
         }
