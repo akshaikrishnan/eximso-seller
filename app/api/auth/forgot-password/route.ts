@@ -6,12 +6,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import nodemailer from 'nodemailer';
 import { render } from '@react-email/render';
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function GET(req: NextRequest, res: NextResponse) {
     try {
         const { searchParams } = req.nextUrl;
         const token = searchParams.get('token');
+        const userType = searchParams.get('userType') ?? 'buyer';
         if (!token) {
             return NextResponse.json(
                 {
@@ -43,8 +43,9 @@ export async function GET(req: NextRequest, res: NextResponse) {
             expiresIn: '7d'
         });
         cookies().set('access_token', accessToken, { httpOnly: true });
-        const loginUrl = new URL('/reset-password', req.url);
+        const loginUrl = new URL('/forgot-password', req.url);
         loginUrl.searchParams.set('forgotPassword', 'true');
+        loginUrl.searchParams.set('userType', userType);
         return NextResponse.redirect(loginUrl);
     } catch (e) {
         console.log(e);
@@ -57,7 +58,7 @@ export async function GET(req: NextRequest, res: NextResponse) {
 export async function POST(req: NextRequest, res: NextResponse) {
     try {
         const body = await req.json();
-        const { email } = body;
+        const { email, userType } = body;
         if (!email) {
             return NextResponse.json(
                 {
@@ -77,8 +78,10 @@ export async function POST(req: NextRequest, res: NextResponse) {
         }
         const token = sign({ email }, process.env.JWT_SECRET!, { expiresIn: '5m' });
         const url = `${
-            process.env.VERCEL_PROJECT_PRODUCTION_URL || 'http://localhost:3000'
-        }/api/auth/forgot-password?token=${token}`;
+            process.env.NEXT_PUBLIC_SELLER_DOMAIN ||
+            process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+            'http://localhost:3001'
+        }/api/auth/forgot-password?token=${token}&userType=${userType}`;
 
         const transporter = nodemailer.createTransport({
             service: 'Gmail',

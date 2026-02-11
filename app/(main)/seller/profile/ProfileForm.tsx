@@ -104,6 +104,18 @@ const FormLayout = ({ categories }: { categories: any }) => {
     }, [profile]);
 
     const onSubmit = (data: Profile) => {
+        // Validate logo
+        if (!data.logo) {
+            toast.error('Please upload a company logo');
+            return;
+        }
+
+        // Validate GST certificate
+        if (!data.gstCertificate) {
+            toast.error('Please upload GST / Registration Certificate');
+            return;
+        }
+
         console.log(data);
         axios.put('/api/user', data).then((res) => {
             queryClient.invalidateQueries({ queryKey: ['profile'] });
@@ -165,7 +177,17 @@ const FormLayout = ({ categories }: { categories: any }) => {
                             <Controller
                                 name="name"
                                 control={control}
-                                rules={{ required: 'Company Name is required.' }}
+                                rules={{
+                                    required: 'Company Name is required.',
+                                    minLength: {
+                                        value: 2,
+                                        message: 'Company name must be at least 2 characters'
+                                    },
+                                    maxLength: {
+                                        value: 200,
+                                        message: 'Company name must not exceed 200 characters'
+                                    }
+                                }}
                                 render={({ field, fieldState }) => (
                                     <InputText
                                         id={field.name}
@@ -257,7 +279,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                             <label htmlFor="country">Country</label>
                             <Controller
                                 name="country"
-                                rules={{ required: 'Country is Required' }}
+                                rules={{ required: 'Country is required' }}
                                 control={control}
                                 render={({ field, fieldState }) => (
                                     <Dropdown
@@ -265,6 +287,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                         id={field.name}
                                         placeholder="Select Country"
                                         filter
+                                        filterPlaceholder="Search country"
                                         options={countries}
                                         className={classNames({
                                             'p-invalid': fieldState.invalid
@@ -283,6 +306,17 @@ const FormLayout = ({ categories }: { categories: any }) => {
                             <Controller
                                 name="address"
                                 control={control}
+                                rules={{
+                                    required: 'Address is required',
+                                    minLength: {
+                                        value: 10,
+                                        message: 'Address must be at least 10 characters'
+                                    },
+                                    maxLength: {
+                                        value: 500,
+                                        message: 'Address must not exceed 500 characters'
+                                    }
+                                }}
                                 render={({ field, fieldState }) => (
                                     <InputTextarea
                                         rows={6}
@@ -335,11 +369,29 @@ const FormLayout = ({ categories }: { categories: any }) => {
                             <Controller
                                 name="gstNo"
                                 control={control}
-                                // rules={{ required: 'GST Number is required.' }}
+                                rules={{
+                                    required: 'GST Number or registration number is required',
+                                    pattern: {
+                                        value: /^[0-9A-Z]{15}$/,
+                                        message: 'Invalid GST Number (must be 15 alphanumeric characters)'
+                                    },
+                                    minLength: {
+                                        value: 5,
+                                        message: 'Registration number must be at least 5 characters'
+                                    }
+                                }}
                                 render={({ field, fieldState }) => (
                                     <InputText
                                         {...field}
                                         id={field.name}
+                                        onChange={(e) => {
+                                            field.onChange({
+                                                ...e,
+                                                target: {
+                                                    value: e.target.value.toUpperCase()
+                                                }
+                                            });
+                                        }}
                                         className={classNames({
                                             'p-invalid': fieldState.invalid
                                         })}
@@ -359,14 +411,15 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                 control={control}
                                 rules={{
                                     pattern: {
-                                        value: /^((https?|ftp|smtp):\/\/)?(www.)?[a-z0-9]+\.[a-z]+(\/[a-zA-Z0-9#]+\/?)*$/,
-                                        message: 'Invalid url eg:"https://eximso.com"'
+                                       value: /^((https?|ftp|smtp):\/\/)?(www\.)?[a-z0-9][-a-z0-9]*(\.[a-z]{2,}){1,3}(\/[a-zA-Z0-9_#?=&%-]*)*\/?$/i,
+                                        message: 'Invalid URL format. E.g. "https://example.com"'
                                     }
                                 }}
                                 render={({ field, fieldState }) => (
                                     <InputText
                                         {...field}
                                         id={field.name}
+                                        placeholder="https://example.com"
                                         className={classNames({
                                             'p-invalid': fieldState.invalid
                                         })}
@@ -397,8 +450,8 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                     />
                                 )}  
                             />
-                            {errors.name && (
-                                <small className="p-error">{errors?.name?.message}</small>
+                            {errors.segment && (
+                                <small className="p-error">{errors?.segment?.message}</small>
                             )}
                         </div>
                         <div className="field">
@@ -407,7 +460,12 @@ const FormLayout = ({ categories }: { categories: any }) => {
                             <Controller
                                 name="categories"
                                 control={control}
-                                rules={{ required: 'Categories are required.' }}
+                                rules={{
+                                    required: 'At least one category is required.',
+                                    validate: (value) =>
+                                        (Array.isArray(value) && value.length > 0) ||
+                                        'Please select at least one category'
+                                }}
                                 render={({ field, fieldState }) => (
                                     <MultiSelect
                                         id={field.name}
@@ -418,7 +476,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                         options={multiselectValues}
                                         itemTemplate={itemTemplate}
                                         optionLabel="name"
-                                        placeholder="Select Countries"
+                                        placeholder="Select Categories"
                                         filter
                                         className={classNames('multiselect-custom', {
                                             'p-invalid': fieldState.invalid
@@ -543,9 +601,16 @@ const FormLayout = ({ categories }: { categories: any }) => {
 
                 <div className="col-12 md:col-6">
                     <div className="card p-fluid">
-                        <h5>Logo</h5>
+                        <h5>Logo <span className="text-red-500">*</span></h5>
                         <div className="flex justify-content-center flex-column align-items-center gap-3">
-                            <Image src={watch('logo')} alt="Image" width="250" preview />
+                            {watch('logo') ? (
+                                <Image src={watch('logo')} alt="Company Logo" width="250" preview />
+                            ) : (
+                                <div className="text-center p-4 border-2 border-dashed surface-border border-round">
+                                    <i className="pi pi-image text-4xl text-400"></i>
+                                    <p className="text-400">No logo uploaded</p>
+                                </div>
+                            )}
                             <FileUpload
                                 mode="basic"
                                 name="file"
@@ -554,11 +619,18 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                 maxFileSize={5242880}
                                 auto
                                 onUpload={onUpload}
+                                chooseLabel="Upload Logo"
                             />
+                            {!watch('logo') && (
+                                <>
+                                    <small className="text-400">Max file size: 5MB. Accepted formats: JPG, PNG, GIF</small>
+                                    <small className="text-red-500">* Logo is required</small>
+                                </>
+                            )}
                         </div>
                     </div>
                     <div className="card p-fluid">
-                        <h5>GST / Registration Certificate</h5>
+                        <h5>GST / Registration Certificate <span className="text-red-500">*</span></h5>
                         <div className="flex justify-content-center flex-column align-items-center gap-3">
                             <DocumentCard
                                 onDelete={() => {
@@ -576,7 +648,12 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                 maxFileSize={1000000}
                                 auto
                                 onUpload={onGstUpload}
+                                chooseLabel={watch('gstCertificate') ? 'Replace Document' : 'Upload Document'}
                             />
+                            <small className="text-400">Max file size: 1MB. Accepted formats: PDF, JPG, PNG, GIF, EPS</small>
+                            {!watch('gstCertificate') && (
+                                <small className="text-red-500">* GST / Registration Certificate is required</small>
+                            )}
                         </div>
                     </div>
                     {/* <div className="card p-fluid">
@@ -612,7 +689,20 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                 <Controller
                                     name="bank.accountHolderName"
                                     control={control}
-                                    // rules={{ required: 'Account Holder Name is required.' }}
+                                    rules={{
+                                        minLength: {
+                                            value: 2,
+                                            message: 'Account holder name must be at least 2 characters'
+                                        },
+                                        maxLength: {
+                                            value: 100,
+                                            message: 'Account holder name must not exceed 100 characters'
+                                        },
+                                        pattern: {
+                                            value: /^[a-zA-Z\s]+$/,
+                                            message: 'Account holder name should only contain letters and spaces'
+                                        }
+                                    }}
                                     render={({ field, fieldState }) => (
                                         <InputText
                                             {...field}
@@ -636,14 +726,23 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                     control={control}
                                     rules={{
                                         pattern: {
-                                            value: /^[A-Z]{4}\d{7}$/,
-                                            message: 'Invalid IFSC code'
+                                            value: /^[A-Z]{4}0[A-Z0-9]{6}$/,
+                                            message: 'Invalid IFSC code format (e.g., SBIN0001234)'
+                                        },
+                                        minLength: {
+                                            value: 11,
+                                            message: 'IFSC code must be exactly 11 characters'
+                                        },
+                                        maxLength: {
+                                            value: 11,
+                                            message: 'IFSC code must be exactly 11 characters'
                                         }
                                     }}
                                     render={({ field, fieldState }) => (
                                         <InputText
                                             {...field}
                                             id={field.name}
+                                            placeholder="SBIN0001234"
                                             onChange={(e) => {
                                                 field.onChange({
                                                     ...e,
@@ -674,16 +773,25 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                     name="bank.accountNo"
                                     control={control}
                                     rules={{
-                                        // required: 'Account Number is required.',
                                         pattern: {
-                                            value: /^[0-9]{10,18}$/,
-                                            message: 'Invalid Account Number'
+                                            value: /^[0-9]{9,18}$/,
+                                            message: 'Invalid account number (must be 9-18 digits)'
+                                        },
+                                        minLength: {
+                                            value: 9,
+                                            message: 'Account number must be at least 9 digits'
+                                        },
+                                        maxLength: {
+                                            value: 18,
+                                            message: 'Account number must not exceed 18 digits'
                                         }
                                     }}
                                     render={({ field, fieldState }) => (
                                         <InputText
                                             {...field}
                                             id={field.name}
+                                            keyfilter="pint"
+                                            placeholder="Enter account number"
                                             className={classNames({
                                                 'p-invalid': fieldState.invalid
                                             })}
@@ -702,11 +810,21 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                 <Controller
                                     name="bank.name"
                                     control={control}
-                                    // rules={{ required: 'Bank Name is required.' }}
+                                    rules={{
+                                        minLength: {
+                                            value: 2,
+                                            message: 'Bank name must be at least 2 characters'
+                                        },
+                                        maxLength: {
+                                            value: 100,
+                                            message: 'Bank name must not exceed 100 characters'
+                                        }
+                                    }}
                                     render={({ field, fieldState }) => (
                                         <InputText
                                             {...field}
                                             id={field.name}
+                                            placeholder="Bank name"
                                             className={classNames({
                                                 'p-invalid': fieldState.invalid
                                             })}
@@ -724,10 +842,21 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                 <Controller
                                     name="bank.branch"
                                     control={control}
+                                    rules={{
+                                        minLength: {
+                                            value: 2,
+                                            message: 'Branch name must be at least 2 characters'
+                                        },
+                                        maxLength: {
+                                            value: 100,
+                                            message: 'Branch name must not exceed 100 characters'
+                                        }
+                                    }}
                                     render={({ field, fieldState }) => (
                                         <InputText
                                             {...field}
                                             id={field.name}
+                                            placeholder="Branch name"
                                             className={classNames({
                                                 'p-invalid': fieldState.invalid
                                             })}
@@ -749,7 +878,21 @@ const FormLayout = ({ categories }: { categories: any }) => {
                             <Controller
                                 name="authPerson.name"
                                 control={control}
-                                rules={{ required: 'Name is required.' }}
+                                rules={{
+                                    required: 'Authorized person name is required',
+                                    minLength: {
+                                        value: 2,
+                                        message: 'Name must be at least 2 characters'
+                                    },
+                                    maxLength: {
+                                        value: 100,
+                                        message: 'Name must not exceed 100 characters'
+                                    },
+                                    pattern: {
+                                        value: /^[a-zA-Z\s]+$/,
+                                        message: 'Name should only contain letters and spaces'
+                                    }
+                                }}
                                 render={({ field, fieldState }) => (
                                     <InputText
                                         {...field}
@@ -771,7 +914,17 @@ const FormLayout = ({ categories }: { categories: any }) => {
                             <Controller
                                 name="authPerson.designation"
                                 control={control}
-                                rules={{ required: 'Designation is required.' }}
+                                rules={{
+                                    required: 'Designation is required',
+                                    minLength: {
+                                        value: 2,
+                                        message: 'Designation must be at least 2 characters'
+                                    },
+                                    maxLength: {
+                                        value: 100,
+                                        message: 'Designation must not exceed 100 characters'
+                                    }
+                                }}
                                 render={({ field, fieldState }) => (
                                     <InputText
                                         {...field}
@@ -794,9 +947,10 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                 name="authPerson.phone"
                                 control={control}
                                 rules={{
+                                    required: 'Mobile number is required',
                                     pattern: {
                                         value: /^[0-9]{10}$/,
-                                        message: 'Invalid mobile number.'
+                                        message: 'Invalid mobile number (must be 10 digits)'
                                     }
                                 }}
                                 render={({ field, fieldState }) => (
@@ -824,6 +978,7 @@ const FormLayout = ({ categories }: { categories: any }) => {
                                 name="authPerson.email"
                                 control={control}
                                 rules={{
+                                    required: 'Email is required',
                                     pattern: {
                                         value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                                         message:

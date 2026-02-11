@@ -1,5 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    webpack: (config) => {
+        if (process.env.NODE_ENV === 'development') {
+            config.cache = false;
+        }
+        return config;
+    },
     async rewrites() {
         return [
             {

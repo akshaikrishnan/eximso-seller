@@ -50,7 +50,7 @@ const ProductForm: Page = ({
     const queryClient = useQueryClient();
     const router = useRouter();
     const { messages, sendMessage } = useChat();
-
+    const [weightUnit, setWeightUnit] = useState<'kg' | 'grams'>('kg');
     const [aiPending, setAiPending] = useState(false);
     const [hasGenerated, setHasGenerated] = useState(false);
 
@@ -219,13 +219,13 @@ Prefer short 1-3 word phrases. No duplicates, no punctuation except commas.)
 
     return (
         <>
-   {product?.isApproved === false ? (
-    <Message
-        severity="info"
-        className="w-full mb-3"
-        text="Your product is pending admin approval. Buyers cannot see this product until admin approval."
-    />
-) : null}
+            {product?.isApproved === false ? (
+                <Message
+                    severity="info"
+                    className="w-full mb-3"
+                    text="Your product is pending admin approval. Buyers cannot see this product until admin approval."
+                />
+            ) : null}
 
             <form className="grid input-demo" onSubmit={handleSubmit(onSubmit)}>
                 <div className="col-12  p-fluid md:col-6">
@@ -851,38 +851,68 @@ Prefer short 1-3 word phrases. No duplicates, no punctuation except commas.)
                                 )}
                             </div>
                             <div className="col-12 lg:col-6">
-                                <label htmlFor="length">Weight</label>
+                                <h6>Weight</h6>
+
                                 <Controller
                                     name="dimensions.weight"
                                     control={control}
                                     rules={{ required: 'Weight is required.' }}
                                     render={({ field, fieldState }) => (
-                                        <InputNumber
-                                            placeholder="(Minimum 1 kg)"
-                                            suffix="kg"
-                                            id={field.name}
-                                            ref={field.ref}
-                                            min={0}
-                                            minFractionDigits={2}
-                                            value={field.value}
-                                            onBlur={field.onBlur}
-                                            onChange={(e) =>
-                                                field.onChange({
-                                                    target: { value: e.value }
-                                                })
-                                            }
-                                            className={classNames({
-                                                'p-invalid': fieldState.invalid
-                                            })}
-                                        />
+                                        <div className="p-inputgroup">
+                                            {/* Weight Input */}
+                                            <InputNumber
+                                                id={field.name}
+                                                ref={field.ref}
+                                                placeholder={`Enter weight in ${weightUnit}`}
+                                                min={0}
+                                                minFractionDigits={2}
+                                                maxFractionDigits={3}
+                                                value={
+                                                    field.value !== undefined && field.value !== null
+                                                        ? weightUnit === 'kg'
+                                                            ? field.value
+                                                            : field.value * 1000
+                                                        : null
+                                                }
+                                                onBlur={field.onBlur}
+                                                onChange={(e) => {
+                                                    const inputValue = e.value;
+
+                                                    const valueInKg =
+                                                        inputValue != null
+                                                            ? weightUnit === 'kg'
+                                                                ? inputValue
+                                                                : inputValue / 1000
+                                                            : null;
+
+                                                    field.onChange(valueInKg);
+                                                }}
+                                                className={classNames({
+                                                    'p-invalid': fieldState.invalid
+                                                })}
+                                            />
+
+                                            {/* Unit Dropdown on RIGHT */}
+                                            <Dropdown
+                                                value={weightUnit}
+                                                options={[
+                                                    { label: 'kg', value: 'kg' },
+                                                    { label: 'grams', value: 'grams' }
+                                                ]}
+                                                onChange={(e) => setWeightUnit(e.value)}
+                                                className="w-6rem"
+                                            />
+                                        </div>
                                     )}
                                 />
+
                                 {errors?.dimensions?.weight && (
                                     <small className="p-error">
                                         {errors?.dimensions?.weight?.message}
                                     </small>
                                 )}
                             </div>
+
                         </div>
                     </div>
                     <div className="card p-fluid">
