@@ -8,6 +8,7 @@ const User = new mongoose.Schema(
         logo: { type: String },
         about: { type: String },
         country: { type: String },
+        postalCode: { type: String },
         categories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Category' }],
         segment: {
             type: String,
