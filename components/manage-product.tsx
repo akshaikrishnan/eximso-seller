@@ -49,15 +49,20 @@ const ProductForm: Page = ({
     const [percentage, setPercentage] = useState(0);
     const queryClient = useQueryClient();
     const router = useRouter();
-    const { messages, sendMessage } = useChat();
+    const { messages: descMessages, sendMessage: sendDescMessage } = useChat();
+    const { messages: tagsMessages, sendMessage: sendTagsMessage } = useChat();
     const [weightUnit, setWeightUnit] = useState<'kg' | 'grams'>('kg');
     const [aiPending, setAiPending] = useState(false);
     const [hasGenerated, setHasGenerated] = useState(false);
 
-    // track the last seen assistant message id and length, to detect growth
-    const lastAssistantIdRef = useRef<string | null>(null);
-    const lastLenRef = useRef<number>(0);
-    const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    // track growth for description stream
+    const lastDescLenRef = useRef<number>(0);
+    const descSettleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const descFinishedRef = useRef(false);
+
+    // track tags completion
+    const tagsSettleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const tagsFinishedRef = useRef(false);
 
     useEffect(() => {
         CategoryService.getUserCategories().then((data) => setAutoValue(data));
@@ -81,7 +86,9 @@ const ProductForm: Page = ({
                 router.push('/seller/products');
             });
             toast.success(
-                `Product ${mode === 'update' ? 'updated' : 'added'} successfully, waiting for admin approval.`
+                `Product ${
+                    mode === 'update' ? 'updated' : 'added'
+                } successfully, waiting for admin approval.`
             );
         }
     });
@@ -151,58 +158,87 @@ const ProductForm: Page = ({
     useEffect(() => {
         if (!aiPending) return;
 
-        // get the latest assistant message (AI SDK grows one message as it streams)
-        const assistant = [...messages].reverse().find((m) => m.role === 'assistant');
-        if (!assistant) return;
-
-        const raw = (assistant.parts ?? [])
-            .map((p: any) => (p?.type === 'text' ? p.text : ''))
-            .join('');
-
-        const cleaned = stripFences(raw);
-        const { html, kw } = splitSections(cleaned);
-
-        // STREAM: update description when html grows
-        if (html && html.length > lastLenRef.current) {
-            lastLenRef.current = html.length;
-            setValue('detailedDescription', html, { shouldDirty: true });
-        }
-
-        // (re)arm settle timer — if no growth for 900ms, we consider it done
-        if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
-        settleTimerRef.current = setTimeout(() => {
-            // final parse at settle time (safer)
-            const finalRaw = (assistant.parts ?? [])
+        // --- DESCRIPTION STREAM HANDLING ---
+        const descAssistant = [...descMessages]
+            .reverse()
+            .find((m) => m.role === 'assistant');
+        if (descAssistant) {
+            const raw = (descAssistant.parts ?? [])
                 .map((p: any) => (p?.type === 'text' ? p.text : ''))
                 .join('');
-            const finalClean = stripFences(finalRaw);
-            const { html: finalHtml, kw: finalKw } = splitSections(finalClean);
 
-            if (finalHtml) {
-                setValue('detailedDescription', finalHtml, { shouldDirty: true });
+            const cleanedHtml = stripFences(raw);
+
+            // STREAM: update description when html grows
+            if (cleanedHtml && cleanedHtml.length > lastDescLenRef.current) {
+                lastDescLenRef.current = cleanedHtml.length;
+                setValue('detailedDescription', cleanedHtml, { shouldDirty: true });
             }
 
-            const tags = parseKeywords(finalKw);
-            if (tags.length) {
-                setValue('tags', tags, { shouldDirty: true });
-            }
+            // re-arm settle timer for description
+            if (descSettleTimerRef.current) clearTimeout(descSettleTimerRef.current);
+            descSettleTimerRef.current = setTimeout(() => {
+                const finalRaw = (descAssistant.parts ?? [])
+                    .map((p: any) => (p?.type === 'text' ? p.text : ''))
+                    .join('');
+                const finalHtml = stripFences(finalRaw);
 
-            setAiPending(false);
-            setHasGenerated(true);
-            toast.success('AI description & keywords added. Review before saving.');
-        }, 900);
-    }, [messages, aiPending, setValue]);
+                if (finalHtml) {
+                    setValue('detailedDescription', finalHtml, { shouldDirty: true });
+                }
+                descFinishedRef.current = true;
 
-    const prompt = `
+                // If tags are also finished, end pending
+                if (tagsFinishedRef.current) {
+                    setAiPending(false);
+                    setHasGenerated(true);
+                    toast.success(
+                        'AI description & keywords added. Review before saving.'
+                    );
+                }
+            }, 900);
+        }
+
+        // --- TAGS STREAM HANDLING ---
+        const tagsAssistant = [...tagsMessages]
+            .reverse()
+            .find((m) => m.role === 'assistant');
+        if (tagsAssistant) {
+            // re-arm settle timer for tags
+            if (tagsSettleTimerRef.current) clearTimeout(tagsSettleTimerRef.current);
+            tagsSettleTimerRef.current = setTimeout(() => {
+                const finalRaw = (tagsAssistant.parts ?? [])
+                    .map((p: any) => (p?.type === 'text' ? p.text : ''))
+                    .join('');
+                const finalClean = stripFences(finalRaw);
+                const tags = parseKeywords(finalClean);
+
+                if (tags.length) {
+                    setValue('tags', tags, { shouldDirty: true });
+                }
+                tagsFinishedRef.current = true;
+
+                // Check if description is also done
+                if (descFinishedRef.current) {
+                    setAiPending(false);
+                    setHasGenerated(true);
+                    toast.success(
+                        'AI description & keywords added. Review before saving.'
+                    );
+                }
+            }, 1000);
+        }
+    }, [descMessages, tagsMessages, aiPending, setValue]);
+
+    const descriptionPrompt = `
 You are writing a detailed, professional product description for a B2B/B2C marketplace rich text editor.
 
 Product name: "${watch('name') || ''}"
 Short description: "${watch('shortDescription') || ''}"
 Highlight a few key benefits with <strong> for important phrases and <em> for subtle emphasis. Keep it professional.
-Write two sections, exactly in this order and format, with no markdown, no code fences, and no extra headers:
 
----HTML---
-(Write clean, structured HTML only. Do not include <html>, <head>, or <body>.
+Write clean, structured HTML only. Do not include <html>, <head>, or <body>. 
+Do not use markdown, no code fences, no extra headers.
 Length: 350-500 words, comprehensive but concise.
 Structure:
 - Intro paragraph: 3-4 sentences, highlighting the product name and its core value.
@@ -210,11 +246,16 @@ Structure:
 - Specifications / details: another <ul><li> list with clear technical or functional attributes.
 - Applications / usage: 2-3 paragraphs describing how and where the product can be used.
 - Closing: a short summary paragraph emphasizing reliability, quality, or value.
-Avoid hype words like "best in the world", avoid pricing/shipping/warranty info, avoid external links.)
----KEYWORDS---
-(Provide 12-20 simple, lowercase, comma-separated keywords or phrases. 
-Base them on product name, category, and description. 
-Prefer short 1-3 word phrases. No duplicates, no punctuation except commas.)
+Avoid hype words like "best in the world", avoid pricing/shipping/warranty info, avoid external links.
+`.trim();
+
+    const tagsPrompt = `
+Provide 12-20 simple, lowercase, comma-separated keywords or phrases for a product.
+Product name: "${watch('name') || ''}"
+Short description: "${watch('shortDescription') || ''}"
+
+Return ONLY the comma-separated phrases. No intro, no outro, no markdown code fences.
+Example format: keyword one, keyword two, phrase three
 `.trim();
 
     return (
@@ -285,8 +326,8 @@ Prefer short 1-3 word phrases. No duplicates, no punctuation except commas.)
                                 required: 'HSN code is required.',
                                 pattern: {
                                     value: /^[0-9]{8}$/,
-                                    message: 'HSN code must be exactly 8 digits.',
-                                },
+                                    message: 'HSN code must be exactly 8 digits.'
+                                }
                             }}
                             render={({ field, fieldState }) => (
                                 <InputText
@@ -299,9 +340,7 @@ Prefer short 1-3 word phrases. No duplicates, no punctuation except commas.)
                             )}
                         />
                         {errors.hsnCode && (
-                            <small className="p-error">
-                                {errors?.hsnCode?.message}
-                            </small>
+                            <small className="p-error">{errors?.hsnCode?.message}</small>
                         )}
                         <h6>Status</h6>
                         <ToggleButton
@@ -357,7 +396,7 @@ Prefer short 1-3 word phrases. No duplicates, no punctuation except commas.)
                                         validate: (value) =>
                                             value
                                                 ? value < priceWatch ||
-                                                'Offer price should be less than original price'
+                                                  'Offer price should be less than original price'
                                                 : true
                                     }}
                                     render={({ field, fieldState }) => (
@@ -546,8 +585,8 @@ Prefer short 1-3 word phrases. No duplicates, no punctuation except commas.)
                                     aiPending
                                         ? 'Generating…'
                                         : hasGenerated
-                                            ? 'Regenerate with AI'
-                                            : 'Generate with AI'
+                                        ? 'Regenerate with AI'
+                                        : 'Generate with AI'
                                 }
                                 icon={<FaMagic />}
                                 loading={aiPending}
@@ -556,18 +595,26 @@ Prefer short 1-3 word phrases. No duplicates, no punctuation except commas.)
                                 onClick={() => {
                                     // reset trackers for a new run
                                     setHasGenerated(true);
-                                    lastAssistantIdRef.current = null;
-                                    lastLenRef.current = 0;
-                                    if (settleTimerRef.current)
-                                        clearTimeout(settleTimerRef.current);
+                                    lastDescLenRef.current = 0;
+                                    descFinishedRef.current = false;
+                                    tagsFinishedRef.current = false;
 
-                                    // (optional) clear existing description before streaming
+                                    if (descSettleTimerRef.current)
+                                        clearTimeout(descSettleTimerRef.current);
+                                    if (tagsSettleTimerRef.current)
+                                        clearTimeout(tagsSettleTimerRef.current);
+
+                                    // (optional) clear existing fields before streaming
                                     setValue('detailedDescription', '', {
+                                        shouldDirty: true
+                                    });
+                                    setValue('tags', [], {
                                         shouldDirty: true
                                     });
 
                                     setAiPending(true);
-                                    sendMessage({ text: prompt });
+                                    sendDescMessage({ text: descriptionPrompt });
+                                    sendTagsMessage({ text: tagsPrompt });
                                 }}
                                 outlined
                                 badge={hasGenerated ? undefined : 'NEW'}
@@ -868,7 +915,8 @@ Prefer short 1-3 word phrases. No duplicates, no punctuation except commas.)
                                                 minFractionDigits={2}
                                                 maxFractionDigits={3}
                                                 value={
-                                                    field.value !== undefined && field.value !== null
+                                                    field.value !== undefined &&
+                                                    field.value !== null
                                                         ? weightUnit === 'kg'
                                                             ? field.value
                                                             : field.value * 1000
@@ -912,7 +960,6 @@ Prefer short 1-3 word phrases. No duplicates, no punctuation except commas.)
                                     </small>
                                 )}
                             </div>
-
                         </div>
                     </div>
                     <div className="card p-fluid">

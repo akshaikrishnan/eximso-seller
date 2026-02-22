@@ -39,7 +39,7 @@ export async function POST(req: Request) {
               .join('') ?? ''
         : '';
 
-    const modelId = 'gemini-2.0-flash';
+    const modelId = 'gemini-2.5-flash';
 
     const result = streamText({
         model: google(modelId),
