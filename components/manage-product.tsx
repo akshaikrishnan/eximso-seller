@@ -49,8 +49,28 @@ const ProductForm: Page = ({
     const [percentage, setPercentage] = useState(0);
     const queryClient = useQueryClient();
     const router = useRouter();
-    const { messages: descMessages, sendMessage: sendDescMessage } = useChat();
-    const { messages: tagsMessages, sendMessage: sendTagsMessage } = useChat();
+    const { messages: descMessages, sendMessage: sendDescMessage } = useChat({
+        onError: (err) => {
+            console.error('AI Description Error:', err);
+            toast.error('Failed to generate description. Please try again.', {
+                description: err.message,
+                richColors: true
+            });
+            setAiPending(false);
+            descFinishedRef.current = true; // Mark as done to avoid hanging
+        }
+    });
+    const { messages: tagsMessages, sendMessage: sendTagsMessage } = useChat({
+        onError: (err) => {
+            console.error('AI Tags Error:', err);
+            toast.error('Failed to generate tags. Please try again.', {
+                description: err.message,
+                richColors: true
+            });
+            setAiPending(false);
+            tagsFinishedRef.current = true; // Mark as done to avoid hanging
+        }
+    });
     const [weightUnit, setWeightUnit] = useState<'kg' | 'grams'>('kg');
     const [aiPending, setAiPending] = useState(false);
     const [hasGenerated, setHasGenerated] = useState(false);
