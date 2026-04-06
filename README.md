@@ -1,4 +1,4 @@
-# Eximso Seller Portal
+# Eximso Seller Portal.
 
 A Next.js 14 application that powers the seller-facing experience for the Eximso platform. The project uses React 18, TypeScript, TanStack Query, PrimeReact, and a mixture of server-side and edge API routes for authentication, file uploads, email, and AI-assisted workflows.【F:package.json†L35-L39】
 
